@@ -1,6 +1,6 @@
-import { user, product, purchase } from "./types"
+import { TUser, TProduct, TPurchase } from "./types"
 
-export const users : user[] = [
+export const users : TUser[] = [
     {
         id: "1",
         email: "johndoe@mail.com",
@@ -13,7 +13,7 @@ export const users : user[] = [
     }
 ];
 
-export const products : product[] = [
+export const products : TProduct[] = [
     {
         id: "1",
         name: "Soda Can",
@@ -28,7 +28,7 @@ export const products : product[] = [
     }
 ]
 
-export const purchases : purchase[] = [
+export const purchases : TPurchase[] = [
     {
         userId: "1",
         productId: "1",
