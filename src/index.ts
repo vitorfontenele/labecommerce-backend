@@ -3,6 +3,13 @@
 //console.log(products)
 //console.log(purchases);
 
-import { getProductById } from "./database";
+import { 
+    getProductById, 
+    queryProductsByName,
+    createPurchase,
+    getAllPurchasesFromUserId 
+} from "./database";
 
-console.log(getProductById("4"));
+console.log(queryProductsByName("screen"));
+console.log(createPurchase("1", "1", 3, 15));
+
