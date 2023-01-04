@@ -70,7 +70,7 @@ export function getAllProducts() : TProduct[]{
     return products;
 }
 
-export function getProductById(id : string) : (undefined | {}){
+export function getProductById(id : string) : (undefined | TProduct){
     return products.find(product => product.id === id);
 }
 
