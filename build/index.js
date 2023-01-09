@@ -18,6 +18,9 @@ app.get("/users", (req, res) => {
 app.get("/products", (req, res) => {
     res.status(200).send(database_1.products);
 });
+app.get("/purchases", (req, res) => {
+    res.status(200).send(database_1.purchases);
+});
 app.get("/product/search", (req, res) => {
     const q = req.query.q;
     const result = (0, database_1.queryProductsByName)(q);

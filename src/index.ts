@@ -4,7 +4,8 @@ import {
     queryProductsByName, 
     createProduct, 
     createPurchase, 
-    createUser} from "./database";
+    createUser,
+    purchases} from "./database";
 import express, {Request, Response} from 'express';
 import { TProduct , PRODUCT_CATEGORY } from './types';
 import cors from 'cors';
@@ -23,6 +24,10 @@ app.get("/users", (req: Request, res: Response) => {
 
 app.get("/products", (req: Request, res: Response) => {
     res.status(200).send(products);
+})
+
+app.get("/purchases", (req: Request, res: Response) => {
+    res.status(200).send(purchases);
 })
 
 app.get("/product/search", (req: Request, res: Response) => {
