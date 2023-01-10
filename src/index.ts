@@ -22,8 +22,44 @@ app.get("/users", (req: Request, res: Response) => {
     res.status(200).send(users);
 })
 
+app.get("/users/:id/purchases", (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const result = purchases.filter(purchase => purchase.userId === userId);
+    res.status(200).send(result);
+})
+
+app.put("/user/:id", (req: Request, res: Response) => {
+    const id = req.params.id;
+    const email = req.body.email as string | undefined;
+    const password = req.body.password as string | undefined;
+
+    const user = users.find(user => user.id === id);
+
+    if (user){
+        user.email = email || user.email;
+        user.password = password || user.password;
+    }
+
+    res.status(200).send("Cadastro atualizado com sucesso");
+})
+
+app.delete("/user/:id", (req: Request, res: Response) => {
+    const id = req.params.id;
+    const userIndex = users.findIndex(user => user.id === id);
+    if (userIndex >= 0){
+        users.splice(userIndex, 1);
+    }
+    res.status(200).send("User apagado com sucesso");
+})
+
 app.get("/products", (req: Request, res: Response) => {
     res.status(200).send(products);
+})
+
+app.get("/products/:id", (req: Request, res: Response) => {
+    const id = req.params.id;
+    const result = products.find(product => product.id === id);
+    res.status(200).send(result);
 })
 
 app.get("/purchases", (req: Request, res: Response) => {
@@ -35,6 +71,33 @@ app.get("/product/search", (req: Request, res: Response) => {
     const result : TProduct[] = queryProductsByName(q);
 
     res.status(200).send(result);
+})
+
+app.put("/product/:id", (req: Request, res: Response) => {
+    const id = req.params.id;
+    const name = req.body.name as string | undefined;
+    const price = req.body.price as number | undefined;
+    const category = req.body.category as PRODUCT_CATEGORY | undefined;
+
+    const product = products.find(product => product.id === id);
+
+    if (product){
+        product.name = name || product.name;
+        product.category = category || product.category;
+
+        product.price = isNaN(price) ? product.price : price;
+    }
+
+    res.status(200).send("Produto atualizado com sucesso!");
+})
+
+app.delete("/product/:id", (req: Request, res: Response) => {
+    const id = req.params.id;
+    const productIndex = products.findIndex(product => product.id === id);
+    if (productIndex >= 0){
+        users.splice(productIndex, 1);
+    }
+    res.status(200).send("Produto apagado com sucesso");
 })
 
 app.post("/users", (req: Request, res: Response) => {

@@ -15,8 +15,37 @@ app.get("/ping", (req, res) => {
 app.get("/users", (req, res) => {
     res.status(200).send(database_1.users);
 });
+app.get("/users/:id/purchases", (req, res) => {
+    const userId = req.params.id;
+    const result = database_1.purchases.filter(purchase => purchase.userId === userId);
+    res.status(200).send(result);
+});
+app.put("/user/:id", (req, res) => {
+    const id = req.params.id;
+    const email = req.body.email;
+    const password = req.body.password;
+    const user = database_1.users.find(user => user.id === id);
+    if (user) {
+        user.email = email || user.email;
+        user.password = password || user.password;
+    }
+    res.status(200).send("Cadastro atualizado com sucesso");
+});
+app.delete("/user/:id", (req, res) => {
+    const id = req.params.id;
+    const userIndex = database_1.users.findIndex(user => user.id === id);
+    if (userIndex >= 0) {
+        database_1.users.splice(userIndex, 1);
+    }
+    res.status(200).send("User apagado com sucesso");
+});
 app.get("/products", (req, res) => {
     res.status(200).send(database_1.products);
+});
+app.get("/products/:id", (req, res) => {
+    const id = req.params.id;
+    const result = database_1.products.find(product => product.id === id);
+    res.status(200).send(result);
 });
 app.get("/purchases", (req, res) => {
     res.status(200).send(database_1.purchases);
@@ -25,6 +54,27 @@ app.get("/product/search", (req, res) => {
     const q = req.query.q;
     const result = (0, database_1.queryProductsByName)(q);
     res.status(200).send(result);
+});
+app.put("/product/:id", (req, res) => {
+    const id = req.params.id;
+    const name = req.body.name;
+    const price = req.body.price;
+    const category = req.body.category;
+    const product = database_1.products.find(product => product.id === id);
+    if (product) {
+        product.name = name || product.name;
+        product.category = category || product.category;
+        product.price = isNaN(price) ? product.price : price;
+    }
+    res.status(200).send("Produto atualizado com sucesso!");
+});
+app.delete("/product/:id", (req, res) => {
+    const id = req.params.id;
+    const productIndex = database_1.products.findIndex(product => product.id === id);
+    if (productIndex >= 0) {
+        database_1.users.splice(productIndex, 1);
+    }
+    res.status(200).send("Produto apagado com sucesso");
 });
 app.post("/users", (req, res) => {
     const id = req.body.id;
