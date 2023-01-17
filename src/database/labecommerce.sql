@@ -1,3 +1,5 @@
+-- Intro SQL
+
 -- query a
 CREATE TABLE users (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
