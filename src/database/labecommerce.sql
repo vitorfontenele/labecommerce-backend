@@ -107,3 +107,37 @@ LIMIT 20;
 SELECT * FROM products
 WHERE price > 40 AND price < 70
 ORDER BY price ASC;
+
+-- Relacoes SQL
+-- Exercicio 1
+CREATE TABLE purchases(
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL UNIQUE NOT NULL,
+    paid INTEGER NOT NULL,
+    delivered_at TEXT,
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
+
+-- Exercicio 2
+INSERT INTO purchases VALUES 
+    ("1", 80, 1, NULL, "1"),
+    ("2", 20, 1, NULL, "1"),
+    ("3", 50, 0, NULL, "2"),
+    ("4", 30, 1, NULL, "2");
+
+UPDATE purchases
+SET delivered_at = datetime('now')
+WHERE id = "2";
+
+SELECT * FROM purchases;
+
+-- Exercicio 3
+SELECT 
+    users.id AS userId,
+    users.email,
+    purchases.total_price
+FROM users
+INNER JOIN purchases
+ON purchases.buyer_id = users.id;
+
