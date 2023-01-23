@@ -32,12 +32,18 @@ app.get("/users", async (req: Request, res: Response) => {
     }   
 })
 
-app.get("/users/:id/purchases", (req: Request, res: Response) => {
+app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const result = purchases.filter(purchase => purchase.userId === userId);
+        // const result = purchases.filter(purchase => purchase.userId === userId);
 
-        if (!result){
+        const result = await db.raw(
+            `SELECT * FROM purchases
+            WHERE buyerId = ${userId};
+            `
+        )
+
+        if (result.length < 1){
             res.status(404);
             throw new Error ("Compra não encontrada");
         }

@@ -33,11 +33,13 @@ app.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.send(error.message);
     }
 }));
-app.get("/users/:id/purchases", (req, res) => {
+app.get("/users/:id/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.params.id;
-        const result = database_1.purchases.filter(purchase => purchase.userId === userId);
-        if (!result) {
+        const result = yield knex_1.db.raw(`SELECT * FROM purchases
+            WHERE buyerId = ${userId};
+            `);
+        if (result.length < 1) {
             res.status(404);
             throw new Error("Compra não encontrada");
         }
@@ -50,7 +52,7 @@ app.get("/users/:id/purchases", (req, res) => {
         }
         res.send(error.message);
     }
-});
+}));
 app.put("/user/:id", (req, res) => {
     try {
         const id = req.params.id;
