@@ -9,6 +9,7 @@ import {
 import express, {Request, Response} from 'express';
 import { PRODUCT_CATEGORY } from './types';
 import cors from 'cors';
+import { db } from "./database/knex";
 
 const app = express();
 app.use(express.json());
@@ -18,9 +19,12 @@ app.get("/ping", (req: Request, res: Response) => {
     res.send("Pong!")
 })
 
-app.get("/users", (req: Request, res: Response) => {
+app.get("/users", async (req: Request, res: Response) => {
     try {
-        res.status(200).send(users);
+        const result = await db.raw(
+            "SELECT * FROM users;"
+        )
+        res.status(200).send(result);
     } catch (error : any) {
         res.status(500);
         console.log(error);
@@ -110,9 +114,12 @@ app.delete("/user/:id", (req: Request, res: Response) => {
     }  
 })
 
-app.get("/products", (req: Request, res: Response) => {
+app.get("/products", async (req: Request, res: Response) => {
     try {
-        res.status(200).send(products);
+        const result = await db.raw(
+            "SELECT * FROM products;"
+        )
+        res.status(200).send(result);
     } catch (error) {
         res.status(500);
         console.log(error);
@@ -144,7 +151,7 @@ app.get("/purchases", (req: Request, res: Response) => {
     res.status(200).send(purchases);
 })
 
-app.get("/product/search", (req: Request, res: Response) => {
+app.get("/product/search", async (req: Request, res: Response) => {
     try {
         const q = req.query.q as string;
 
@@ -157,9 +164,13 @@ app.get("/product/search", (req: Request, res: Response) => {
             res.status(400);
             throw new Error ("'q' precisa ser definido");
         }
-        const result = queryProductsByName(q);
+        // const result = queryProductsByName(q);
+        const product = await db.raw(`
+            SELECT * FROM products
+            WHERE name LIKE('%${q}%');
+        `)
 
-        res.status(200).send(result);
+        res.status(200).send(product);
     } catch (error) {
         console.log(error)
         if (res.statusCode === 200){
