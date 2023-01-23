@@ -117,10 +117,11 @@ app.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.send(error.message);
     }
 }));
-app.get("/products/:id", (req, res) => {
+app.get("/products/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.params.id;
-        const result = database_1.products.find(product => product.id === id);
+        const [result] = yield knex_1.db.raw(`SELECT * FROM products
+            WHERE id = "${id}"`);
         if (!result) {
             res.status(404);
             throw new Error("Produto não encontrado");
@@ -134,10 +135,18 @@ app.get("/products/:id", (req, res) => {
         }
         res.send(error.message);
     }
-});
-app.get("/purchases", (req, res) => {
-    res.status(200).send(database_1.purchases);
-});
+}));
+app.get("/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield knex_1.db.raw("SELECT * FROM purchases;");
+        res.status(200).send(result);
+    }
+    catch (error) {
+        res.status(500);
+        console.log(error);
+        res.send(error.message);
+    }
+}));
 app.get("/product/search", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const q = req.query.q;
@@ -230,11 +239,12 @@ app.delete("/product/:id", (req, res) => {
         res.send(error.message);
     }
 });
-app.post("/users", (req, res) => {
+app.post("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.body.id;
         const email = req.body.email;
         const password = req.body.password;
+        const name = req.body.name;
         if (id !== undefined) {
             if (typeof id !== "string") {
                 res.status(400);
@@ -250,6 +260,16 @@ app.post("/users", (req, res) => {
         else {
             res.status(400);
             throw new Error("User precisa ter um id");
+        }
+        if (name !== undefined) {
+            if (typeof name !== "string") {
+                res.status(400);
+                throw new Error("Nome do user deve ser uma string");
+            }
+        }
+        else {
+            res.status(400);
+            throw new Error("User precisa ter um nome");
         }
         if (email !== undefined) {
             if (typeof email !== "string") {
@@ -277,7 +297,10 @@ app.post("/users", (req, res) => {
             res.status(400);
             throw new Error("User precisa ter um password");
         }
-        (0, database_1.createUser)(id, email, password);
+        yield knex_1.db.raw(`
+            INSERT INTO users(id, name, email, password) VALUES
+            ("${id}", "${name}", "${email}", "${password}");
+        `);
         res.status(201).send("Cadastro realizado com sucesso");
     }
     catch (error) {
@@ -287,12 +310,14 @@ app.post("/users", (req, res) => {
         }
         res.send(error.message);
     }
-});
-app.post("/products", (req, res) => {
+}));
+app.post("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.body.id;
         const name = req.body.name;
         const price = req.body.price;
+        const description = req.body.description;
+        const imageUrl = req.body.imageUrl;
         const category = req.body.category;
         if (id !== undefined) {
             if (typeof id !== "string") {
@@ -330,10 +355,30 @@ app.post("/products", (req, res) => {
             res.status(400);
             throw new Error("Produto deve ter um preço");
         }
+        if (description !== undefined) {
+            if (typeof description !== "string") {
+                res.status(400);
+                throw new Error("Descrição do produto deve ser uma string");
+            }
+        }
+        else {
+            res.status(400);
+            throw new Error("Produto deve ter uma descrição");
+        }
+        if (imageUrl !== undefined) {
+            if (typeof imageUrl !== "string") {
+                res.status(400);
+                throw new Error("URL da imagem deve ser uma string");
+            }
+        }
+        else {
+            res.status(400);
+            throw new Error("Produto deve ter uma URL de imagem");
+        }
         if (category != undefined) {
-            if (category !== "Acessórios" &&
-                category !== "Roupas" &&
-                category !== "Eletrônicos") {
+            if (category !== "Acessories" &&
+                category !== "Clothes and Shoes" &&
+                category !== "Electronics") {
                 res.status(400);
                 throw new Error("Produto deve ter uma categoria existente");
             }
@@ -342,7 +387,10 @@ app.post("/products", (req, res) => {
             res.status(400);
             throw new Error("Produto deve ter uma categoria");
         }
-        (0, database_1.createProduct)(id, name, price, category);
+        yield knex_1.db.raw(`
+            INSERT INTO products(id, name, price, description, imageUrl, category) VALUES 
+            ("${id}", "${name}", "${price}", "${description}", "${imageUrl}", "${category}")
+        `);
         res.status(201).send("Produto cadastrado com sucesso");
     }
     catch (error) {
@@ -352,70 +400,55 @@ app.post("/products", (req, res) => {
         }
         res.send(error.message);
     }
-});
-app.post("/purchases", (req, res) => {
+}));
+app.post("/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const userId = req.body.userId;
-        const productId = req.body.productId;
-        const quantity = req.body.quantity;
+        const id = req.body.id;
+        const buyerId = req.body.buyerId;
         const totalPrice = req.body.totalPrice;
-        if (userId !== undefined) {
-            if (typeof userId !== "string") {
+        const paid = req.body.paid;
+        if (id !== undefined) {
+            if (typeof id !== "string") {
                 res.status(400);
-                throw new Error("userId deve ser uma string");
+                throw new Error("id deve ser uma string");
             }
-            const userExists = database_1.users.find(user => user.id === userId);
-            if (!userExists) {
-                res.status(404);
-                throw new Error("Não há um usuário com esse id");
+        }
+        else {
+            res.status(400);
+            throw new Error("Compra deve ter um id");
+        }
+        if (buyerId !== undefined) {
+            if (typeof buyerId !== "string") {
+                res.status(400);
+                throw new Error("buyerId deve ser uma string");
             }
         }
         else {
             res.status(400);
             throw new Error("Compra deve ter um id de usuário");
         }
-        if (productId !== undefined) {
-            if (typeof productId !== "string") {
-                res.status(400);
-                throw new Error("productId deve ser uma string");
-            }
-            const productExists = database_1.products.find(product => product.id === productId);
-            if (!productExists) {
-                res.status(404);
-                throw new Error("Não há um produto com esse id");
-            }
-        }
-        else {
-            res.status(400);
-            throw new Error("Compra deve ter um id de produto");
-        }
-        if (quantity !== undefined) {
-            if (typeof quantity !== "number") {
-                res.status(400);
-                throw new Error("Quantidade de produtos comprados deve ser um número");
-            }
-        }
-        else {
-            res.status(400);
-            throw new Error("Compra deve ter uma quantidade de produtos comprados");
-        }
         if (totalPrice !== undefined) {
             if (typeof totalPrice !== "number") {
                 res.status(400);
                 throw new Error("Preço total da compra deve ser um número");
-            }
-            const product = database_1.products.find(product => product.id === productId);
-            const { price } = product;
-            if ((price * quantity) !== totalPrice) {
-                res.status(400);
-                throw new Error("Preço total da compra não condizente com quantidade e preço do produto");
             }
         }
         else {
             res.status(400);
             throw new Error("Compra deve ter um preço total");
         }
-        (0, database_1.createPurchase)(userId, productId, quantity, totalPrice);
+        if (paid !== undefined) {
+            if (typeof paid !== "number") {
+                res.status(400);
+                throw new Error("Status de pago deve ser um número");
+            }
+        }
+        else {
+            res.status(400);
+            throw new Error("Compra deve ter um status de pago");
+        }
+        yield knex_1.db.raw(`INSERT INTO purchases(id, buyerId, totalPrice, paid) VALUES
+            ("${id}", "${buyerId}", "${totalPrice}", "${paid}")`);
         res.status(201).send("Compra realizada com sucesso");
     }
     catch (error) {
@@ -425,7 +458,7 @@ app.post("/purchases", (req, res) => {
         }
         res.send(error.message);
     }
-});
+}));
 app.listen(3003, () => {
     console.log("Servidor rodando!");
 });
