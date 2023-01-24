@@ -24,7 +24,7 @@ app.get("/ping", (req, res) => {
 });
 app.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield knex_1.db.raw("SELECT * FROM users;");
+        const result = yield (0, knex_1.db)("users");
         res.status(200).send(result);
     }
     catch (error) {
@@ -36,12 +36,10 @@ app.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 app.get("/users/:id/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.params.id;
-        const result = yield knex_1.db.raw(`SELECT * FROM purchases
-            WHERE buyerId = ${userId};
-            `);
+        const result = yield (0, knex_1.db)("purchases").where({ buyerId: userId });
         if (result.length < 1) {
             res.status(404);
-            throw new Error("Compra não encontrada");
+            throw new Error("Nenhuma compra entrada");
         }
         res.status(200).send(result);
     }
@@ -110,7 +108,7 @@ app.delete("/user/:id", (req, res) => {
 });
 app.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield knex_1.db.raw("SELECT * FROM products;");
+        const result = yield (0, knex_1.db)("products");
         res.status(200).send(result);
     }
     catch (error) {
@@ -452,6 +450,27 @@ app.post("/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function*
         yield knex_1.db.raw(`INSERT INTO purchases(id, buyerId, totalPrice, paid) VALUES
             ("${id}", "${buyerId}", "${totalPrice}", "${paid}")`);
         res.status(201).send("Compra realizada com sucesso");
+    }
+    catch (error) {
+        console.log(error);
+        if (res.statusCode === 200) {
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+}));
+app.get("/purchases/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = req.params.id;
+        const [result] = yield (0, knex_1.db)("purchases").where({ id: id });
+        if (!result) {
+            res.status(404);
+            throw new Error("Compra não encontrada");
+        }
+        const [user] = yield (0, knex_1.db)("users").where({ id: result.buyerId });
+        result["name"] = user.name;
+        result["email"] = user.email;
+        res.status(200).send(result);
     }
     catch (error) {
         console.log(error);

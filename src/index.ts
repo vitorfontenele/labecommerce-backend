@@ -21,9 +21,7 @@ app.get("/ping", (req: Request, res: Response) => {
 
 app.get("/users", async (req: Request, res: Response) => {
     try {
-        const result = await db.raw(
-            "SELECT * FROM users;"
-        )
+        const result = await db("users");
         res.status(200).send(result);
     } catch (error : any) {
         res.status(500);
@@ -37,15 +35,11 @@ app.get("/users/:id/purchases", async (req: Request, res: Response) => {
         const userId = req.params.id;
         // const result = purchases.filter(purchase => purchase.userId === userId);
 
-        const result = await db.raw(
-            `SELECT * FROM purchases
-            WHERE buyerId = ${userId};
-            `
-        )
+        const result = await db("purchases").where({buyerId: userId});
 
         if (result.length < 1){
             res.status(404);
-            throw new Error ("Compra não encontrada");
+            throw new Error ("Nenhuma compra entrada");
         }
 
         res.status(200).send(result);
@@ -122,9 +116,7 @@ app.delete("/user/:id", (req: Request, res: Response) => {
 
 app.get("/products", async (req: Request, res: Response) => {
     try {
-        const result = await db.raw(
-            "SELECT * FROM products;"
-        )
+        const result = await db("products");
         res.status(200).send(result);
     } catch (error) {
         res.status(500);
@@ -531,6 +523,30 @@ app.post("/purchases", async (req: Request, res: Response) => {
         res.send(error.message);
     }
 })
+
+app.get("/purchases/:id", async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        const [result] = await db("purchases").where({id: id});
+
+        if (!result){
+            res.status(404);
+            throw new Error ("Compra não encontrada");
+        }
+
+        const [user] = await db("users").where({id: result.buyerId});
+        result["name"] = user.name;
+        result["email"] = user.email;
+
+        res.status(200).send(result);
+    } catch (error) {
+        console.log(error)
+        if (res.statusCode === 200){
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+});
 
 app.listen(3003, () => {
     console.log("Servidor rodando!");
