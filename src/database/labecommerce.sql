@@ -20,22 +20,24 @@ INSERT INTO users(id, name, email, password) VALUES
 SELECT * FROM users;
 
 -- query d
+DROP TABLE products;
+
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
     price REAL NOT NULL,
     description TEXT NOT NULL,
-    imageUrl TEXT NOT NULL,
+    image_url TEXT NOT NULL,
     category TEXT NOT NULL
 );
 
 -- query e
-INSERT INTO products VALUES
-    ("p001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://static.beautytocare.com/media/catalog/product/cache/global/image/1300x1300/85e4522595efc69f496374d01ef2bf13/e/s/esthederm-sun-photo-regul-sunscreen-pigmentation-irregularities-50ml-2.jpg", "Acessories"),
-    ("p002", "Backpack", 50, "Your best friend during your daily commute.", "https://www.helikon-tex.com/media/catalog/product/cache/4/image/9df78eab33525d08d6e5fb8d27136e95/p/l/pl-dtn-nl-1919.jpg", "Acessories"),
-    ("p003", "Keyboard", 30, "If you need to write, you need to type.", "https://m.media-amazon.com/images/I/71TKFcoGIJL._AC_SS450_.jpg", "Electronics"),
-    ("p004", "Webcam", 70, "Show your face to the world with this amazing webcam.", "https://wb.fbitsstatic.net/img/p/256796/webcam-full-hd-1080p-wb-amplo-angulo-110%C2%B0-70183/256796.jpg?w=1200&h=1200", "Electronics"),
-    ("p005", "Radio", 60, "Sometimes you need it a bit old-fashoned.", "https://cf.shopee.com.br/file/sg-11134201-23010-pncsckm0c0lv79", "Electronics");
+INSERT INTO products(id, name, price, description, image_url, category) VALUES
+    ("prod001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://static.beautytocare.com/media/catalog/product/cache/global/image/1300x1300/85e4522595efc69f496374d01ef2bf13/e/s/esthederm-sun-photo-regul-sunscreen-pigmentation-irregularities-50ml-2.jpg", "Acessories"),
+    ("prod002", "Backpack", 50, "Your best friend during your daily commute.", "https://www.helikon-tex.com/media/catalog/product/cache/4/image/9df78eab33525d08d6e5fb8d27136e95/p/l/pl-dtn-nl-1919.jpg", "Acessories"),
+    ("prod003", "Keyboard", 30, "If you need to write, you need to type.", "https://m.media-amazon.com/images/I/71TKFcoGIJL._AC_SS450_.jpg", "Electronics"),
+    ("prod004", "Webcam", 70, "Show your face to the world with this amazing webcam.", "https://wb.fbitsstatic.net/img/p/256796/webcam-full-hd-1080p-wb-amplo-angulo-110%C2%B0-70183/256796.jpg?w=1200&h=1200", "Electronics"),
+    ("prod005", "Radio", 60, "Sometimes you need it a bit old-fashoned.", "https://cf.shopee.com.br/file/sg-11134201-23010-pncsckm0c0lv79", "Electronics");
 
 -- query f
 SELECT * FROM products;

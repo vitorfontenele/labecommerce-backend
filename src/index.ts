@@ -10,6 +10,7 @@ import {
     passwordRegex,
     emailRegex
  } from "./regex";
+import { readdirSync } from "fs";
 
 const app = express();
 app.use(express.json());
@@ -40,7 +41,7 @@ app.get("/users", async (req: Request, res: Response) => {
             res.send("Erro inesperado");
         }
     }   
-})
+});
 
 // Create user
 app.post("/users", async (req: Request, res: Response) => {
@@ -116,7 +117,7 @@ app.post("/users", async (req: Request, res: Response) => {
         await db("users").insert(newUser);
         
         res.status(201).send({
-            message: "User criado com sucesso",
+            message: "Cadastro realizado com sucesso",
             user: newUser
         }); 
     } catch (error) {
@@ -132,7 +133,118 @@ app.post("/users", async (req: Request, res: Response) => {
             res.send("Erro inesperado");
         }
     }
-})
+});
+
+// Create product
+app.post("/products", async (req: Request, res: Response) => {
+    try {
+        // destructuring para pegar info que vem do body
+        const {id, name, price, description, image_url} = req.body;
+        const category = req.body.category as PRODUCT_CATEGORY;
+
+        // id precisa existir e ser uma string
+        if (typeof id !== "string"){
+            res.status(400);
+            throw new Error ("'id' deve existir e ser uma string");
+        }
+        // product precisa ter id único
+        const idExists = await db("products").where({id: id});
+        if (idExists.length > 0){
+            res.status(400);
+            throw new Error ("Já existe um 'product' com esse 'id'");
+        }
+        // id do product precisa ter no mínimo 7 caracteres
+        if (id.length < 7){
+            res.status(400);
+            throw new Error ("'id' precisa ter no mínimo 7 caracteres");
+        }
+
+        // name precisa existir e ser uma string
+        if (typeof name !== "string"){
+            res.status(400);
+            throw new Error ("'name' deve existir e ser uma string"); 
+        }
+        // name precisa ter no mínimo 2 caracteres
+        if (name.length < 2){
+            res.status(400);
+            throw new Error ("'name' precisa ter no mínimo 2 caracteres");
+        }
+
+        // price precisa existir e ser um number
+        if (typeof price !== "number"){
+            res.status(400);
+            throw new Error ("'price' deve existir e ser um number");
+        }
+        // price precisa ser maior do que zero
+        if (price <= 0){
+            res.status(400);
+            throw new Error ("'price' deve ser maior do que zero");
+        }
+
+        // description precisa existir e ser uma string
+        if (typeof description !== "string"){
+            res.status(400);
+            throw new Error ("'description' deve existir e ser uma string");
+        }
+        // description precisa ter no mínimo 2 caracteres
+        if (description.length < 2){
+            res.status(400);
+            throw new Error ("'description' deve ter no mínimo 2 caracteres");
+        }
+
+        // image_url precisa existir e ser uma string
+        if (typeof image_url !== "string"){
+            res.status(400);
+            throw new Error ("'image_url' deve existir e ser uma string");
+        }
+        // URLs podem ter muitos formatos. Fica pendente ver se vale alguma outra verificação
+
+        // category precisa existir e ser uma string
+        if (typeof category !== "string"){
+            res.status(400);
+            throw new Error ("'category' deve existir e ser uma string");
+        }
+        // produto deve ter uma das categorias existentes
+        if (
+            category !== "Acessories" &&
+            category !== "Clothes and Shoes" &&
+            category !== "Electronics"
+        ){
+            res.status(400);
+            throw new Error ("Produto deve ter uma categoria existente");
+        }
+        
+        // novo produto a ser inserido
+        const newProduct = {
+            id,
+            name,
+            price,
+            description,
+            imageUrl: image_url,
+            category
+        };
+
+        // query para inserir o novo produto
+        await db("products").insert(newProduct);
+
+        res.status(201).send({
+            message: "Produto cadastrado com sucesso",
+            product: newProduct
+        });
+    } catch (error) {
+        console.log(error);
+
+        if (req.statusCode === 200) {
+            res.status(500);
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
+    }
+});
 
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
@@ -369,103 +481,6 @@ app.delete("/product/:id", (req: Request, res: Response) => {
         }
         res.send(error.message);
     }  
-})
-
-app.post("/products", async (req: Request, res: Response) => {
-    try {
-        const id = req.body.id;
-        const name = req.body.name;
-        const price = req.body.price;
-        const description = req.body.description;
-        const imageUrl = req.body.imageUrl;
-        const category = req.body.category as PRODUCT_CATEGORY
-
-        if (id !== undefined){
-            if (typeof id !== "string"){
-                res.status(400);
-                throw new Error ("Id deve ser uma string");
-            }
-
-            // Id do produto nao pode se repetir
-            for (let i = 0; i < products.length; i++){
-                if (products[i].id === id){
-                    res.status(400)
-                    throw new Error ("Já existe um produto com esse id");
-                }
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter um id");
-        }
-
-        if (name !== undefined){
-            if (typeof name !== "string"){
-                res.status(400);
-                throw new Error ("Nome do produto deve ser uma string");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter um nome"); 
-        }
-
-        if (price !== undefined){
-            if (typeof price !== "number"){
-                res.status(400);
-                throw new Error ("Preço do produto deve ser um número");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter um preço"); 
-        }
-
-        if (description !== undefined){
-            if (typeof description !== "string"){
-                res.status(400);
-                throw new Error ("Descrição do produto deve ser uma string");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter uma descrição"); 
-        }
-
-        if (imageUrl !== undefined){
-            if (typeof imageUrl !== "string"){
-                res.status(400);
-                throw new Error ("URL da imagem deve ser uma string");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter uma URL de imagem"); 
-        }
-
-        if (category != undefined){
-            if (
-                category !== "Acessories" &&
-                category !== "Clothes and Shoes" &&
-                category !== "Electronics"
-            ){
-                res.status(400);
-                throw new Error ("Produto deve ter uma categoria existente");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Produto deve ter uma categoria");
-        }
-
-        // createProduct(id, name, price, category);
-        await db.raw(`
-            INSERT INTO products(id, name, price, description, imageUrl, category) VALUES 
-            ("${id}", "${name}", "${price}", "${description}", "${imageUrl}", "${category}")
-        `);
-
-        res.status(201).send("Produto cadastrado com sucesso");
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
 })
 
 app.post("/purchases", async (req: Request, res: Response) => {
