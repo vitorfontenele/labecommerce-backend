@@ -1,11 +1,7 @@
 import { 
     users, 
-    products, 
-    queryProductsByName, 
-    createProduct, 
-    createPurchase, 
-    createUser,
-    purchases} from "./database";
+    products
+} from "./database";
 import express, {Request, Response} from 'express';
 import { PRODUCT_CATEGORY } from './types';
 import cors from 'cors';
@@ -15,19 +11,113 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get("/ping", (req: Request, res: Response) => {
-    res.send("Pong!")
-})
-
+// Get all users
 app.get("/users", async (req: Request, res: Response) => {
     try {
         const result = await db("users");
-        res.status(200).send(result);
-    } catch (error : any) {
-        res.status(500);
+        const output = result.map(({ id, name, email, password, created_at }) => ({
+            id,
+            name,
+            email,
+            password,
+            createdAt: created_at
+        }));
+        res.status(200).send(output);
+    } catch (error) {
         console.log(error);
-        res.send(error.message);
+
+        if (req.statusCode === 200) {
+            res.status(500);
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
     }   
+})
+
+// Create user
+app.post("/users", async (req: Request, res: Response) => {
+    try {
+        const {id, name, email, password} = req.body;
+
+        if (id !== undefined){
+            if (typeof id !== "string"){
+                res.status(400);
+                throw new Error ("Id do user deve ser uma string");
+            }
+
+            // Nao pode haver repeticao de id
+            for (let i = 0; i < users.length; i++){
+                if (users[i].id === id){
+                    res.status(400);
+                    throw new Error ("Já existe um user com esse id");
+                }
+            }
+        } else {
+            res.status(400);
+            throw new Error ("User precisa ter um id");
+        }
+
+        if (name !== undefined){
+            if (typeof name !== "string"){
+                res.status(400);
+                throw new Error ("Nome do user deve ser uma string");
+            }
+        } else {
+            res.status(400);
+            throw new Error ("User precisa ter um nome");
+        }
+
+        if (email !== undefined){
+            if (typeof email !== "string"){
+                res.status(400);
+                throw new Error ("Email do user deve ser uma string");
+            }
+
+            // Nao pode haver repeticao de email
+            for (let i = 0; i < users.length; i++){
+                if (users[i].email === email){
+                    res.status(400);
+                    throw new Error ("Já existe um user com esse email");
+                }
+            }
+        } else {
+            res.status(400);
+            throw new Error ("User precisa ter um email");
+        }
+
+        if (password !== undefined){
+            if (typeof password !== "string"){
+                res.status(400);
+                throw new Error ("Password do user deve ser uma string");
+            }
+        } else {
+            res.status(400);
+            throw new Error ("User precisa ter um password");
+        }
+
+        // createUser(id, email, password);
+        await db.raw(`
+            INSERT INTO users(id, name, email, password) VALUES
+            ("${id}", "${name}", "${email}", "${password}");
+        `)
+        
+        res.status(201).send("Cadastro realizado com sucesso"); 
+
+    } catch (error) {
+
+        console.log(error);
+
+        if (res.statusCode === 200){
+            res.status(500);
+        }
+
+        res.send(error.message);
+    }
+
 })
 
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
@@ -265,90 +355,6 @@ app.delete("/product/:id", (req: Request, res: Response) => {
         }
         res.send(error.message);
     }  
-})
-
-app.post("/users", async (req: Request, res: Response) => {
-    try {
-        const id = req.body.id;
-        const email = req.body.email;
-        const password = req.body.password;
-        const name = req.body.name;
-
-        if (id !== undefined){
-            if (typeof id !== "string"){
-                res.status(400);
-                throw new Error ("Id do user deve ser uma string");
-            }
-
-            // Nao pode haver repeticao de id
-            for (let i = 0; i < users.length; i++){
-                if (users[i].id === id){
-                    res.status(400);
-                    throw new Error ("Já existe um user com esse id");
-                }
-            }
-        } else {
-            res.status(400);
-            throw new Error ("User precisa ter um id");
-        }
-
-        if (name !== undefined){
-            if (typeof name !== "string"){
-                res.status(400);
-                throw new Error ("Nome do user deve ser uma string");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("User precisa ter um nome");
-        }
-
-        if (email !== undefined){
-            if (typeof email !== "string"){
-                res.status(400);
-                throw new Error ("Email do user deve ser uma string");
-            }
-
-            // Nao pode haver repeticao de email
-            for (let i = 0; i < users.length; i++){
-                if (users[i].email === email){
-                    res.status(400);
-                    throw new Error ("Já existe um user com esse email");
-                }
-            }
-        } else {
-            res.status(400);
-            throw new Error ("User precisa ter um email");
-        }
-
-        if (password !== undefined){
-            if (typeof password !== "string"){
-                res.status(400);
-                throw new Error ("Password do user deve ser uma string");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("User precisa ter um password");
-        }
-
-        // createUser(id, email, password);
-        await db.raw(`
-            INSERT INTO users(id, name, email, password) VALUES
-            ("${id}", "${name}", "${email}", "${password}");
-        `)
-        
-        res.status(201).send("Cadastro realizado com sucesso"); 
-
-    } catch (error) {
-
-        console.log(error);
-
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-
-        res.send(error.message);
-    }
-
 })
 
 app.post("/products", async (req: Request, res: Response) => {

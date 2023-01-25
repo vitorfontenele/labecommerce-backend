@@ -1,6 +1,5 @@
 -- Intro SQL
 DROP TABLE users;
-DROP TABLE products;
 
 -- query a
 CREATE TABLE users (
@@ -8,14 +7,14 @@ CREATE TABLE users (
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    createdAt TEXT DEFAULT(DATETIME('now', 'localtime')) NOT NULL
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL
 );
 
 -- query b
 INSERT INTO users(id, name, email, password) VALUES
-    ("1", "Dorothy", "dorothygale@gmail.com", "dvnvndsfv"),
-    ("2", "Scarecrow", "scarecrow@hotmail.com", "12345"),
-    ("3", "Tin Man", "tinman@outlook.com", "password");
+    ("u001", "Dorothy", "dorothygale@gmail.com", "dvnvndsfv"),
+    ("u002", "Scarecrow", "scarecrow@hotmail.com", "12345"),
+    ("u003", "Tin Man", "tinman@outlook.com", "password");
 
 -- query c
 SELECT * FROM users;
