@@ -6,6 +6,10 @@ import express, {Request, Response} from 'express';
 import { PRODUCT_CATEGORY } from './types';
 import cors from 'cors';
 import { db } from "./database/knex";
+import { 
+    passwordRegex,
+    emailRegex
+ } from "./regex";
 
 const app = express();
 app.use(express.json());
@@ -41,83 +45,93 @@ app.get("/users", async (req: Request, res: Response) => {
 // Create user
 app.post("/users", async (req: Request, res: Response) => {
     try {
+        // destructuring para pegar info que vem do body
         const {id, name, email, password} = req.body;
 
-        if (id !== undefined){
-            if (typeof id !== "string"){
-                res.status(400);
-                throw new Error ("Id do user deve ser uma string");
-            }
-
-            // Nao pode haver repeticao de id
-            for (let i = 0; i < users.length; i++){
-                if (users[i].id === id){
-                    res.status(400);
-                    throw new Error ("Já existe um user com esse id");
-                }
-            }
-        } else {
+        // id precisa existir e ser uma string
+        if (typeof id !== "string"){
             res.status(400);
-            throw new Error ("User precisa ter um id");
+            throw new Error ("'id' deve existir e ser uma string");
+        }
+        // user precisa ter id único
+        const idExists = await db("users").where({id: id});
+        if (idExists.length > 0){
+            res.status(400);
+            throw new Error ("Já existe um usuário com esse 'id'");
+        }
+        // id do user precisa ter no mínimo 4 caracteres
+        if (id.length < 4){
+            res.status(400);
+            throw new Error ("'id' precisa ter no mínimo 4 caracteres");
         }
 
-        if (name !== undefined){
-            if (typeof name !== "string"){
-                res.status(400);
-                throw new Error ("Nome do user deve ser uma string");
-            }
-        } else {
+        // name precisa existir e ser uma string
+        if (typeof name !== "string"){
             res.status(400);
-            throw new Error ("User precisa ter um nome");
+            throw new Error ("'name' deve existir e ser uma string"); 
+        }
+        // name precisa ter no mínimo 2 caracteres
+        if (name.length < 2){
+            res.status(400);
+            throw new Error ("'name' precisa ter no mínimo 2 caracteres");
         }
 
-        if (email !== undefined){
-            if (typeof email !== "string"){
-                res.status(400);
-                throw new Error ("Email do user deve ser uma string");
-            }
-
-            // Nao pode haver repeticao de email
-            for (let i = 0; i < users.length; i++){
-                if (users[i].email === email){
-                    res.status(400);
-                    throw new Error ("Já existe um user com esse email");
-                }
-            }
-        } else {
+        // email precisa existir e ser uma string
+        if (typeof email !== "string"){
             res.status(400);
-            throw new Error ("User precisa ter um email");
+            throw new Error ("'email' deve existir e ser uma string");
+        }
+        // email precisa ser único
+        const emailExists = await db("users").where({email: email});
+        if (emailExists.length > 0){
+            res.status(400);
+            throw new Error ("Já existe um usuário com esse 'email'");
+        }
+        // email deve ter formato de email
+        if (!emailRegex.test(email)){
+            res.status(400);
+            throw new Error ("'email' deve ter formato de e-mail");
         }
 
-        if (password !== undefined){
-            if (typeof password !== "string"){
-                res.status(400);
-                throw new Error ("Password do user deve ser uma string");
-            }
-        } else {
+        // password precisa existir e ser uma string
+        if (typeof password !== "string"){
             res.status(400);
-            throw new Error ("User precisa ter um password");
+            throw new Error ("'password' deve existir e ser uma string");
+        }
+        // password deve ter entre 4 e 8 dígitos e incluir pelo menos um dígito numérico
+        if (!passwordRegex.test(password)){
+            res.status(400);
+            throw new Error ("password deve ter entre 4 e 8 dígitos e incluir pelo menos um dígito numérico");
         }
 
-        // createUser(id, email, password);
-        await db.raw(`
-            INSERT INTO users(id, name, email, password) VALUES
-            ("${id}", "${name}", "${email}", "${password}");
-        `)
+        // novo usuário a ser inserido
+        const newUser = {
+            id,
+            name, 
+            email, 
+            password
+        }
+
+        // query para inserir o novo usuário
+        await db("users").insert(newUser);
         
-        res.status(201).send("Cadastro realizado com sucesso"); 
-
+        res.status(201).send({
+            message: "User criado com sucesso",
+            user: newUser
+        }); 
     } catch (error) {
-
         console.log(error);
 
-        if (res.statusCode === 200){
+        if (req.statusCode === 200) {
             res.status(500);
         }
 
-        res.send(error.message);
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
     }
-
 })
 
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
