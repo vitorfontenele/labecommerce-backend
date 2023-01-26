@@ -602,6 +602,8 @@ app.delete("/purchases/:id", async (req: Request, res: Response) => {
         }
 
         // deletando a purchase
+        // (deletar na tabela em que há relações antes)
+        await db("purchases_products").where({purchase_id: idToDelete});
         await db("purchases").del().where({id: idToDelete});
 
         res.status(200).send({
