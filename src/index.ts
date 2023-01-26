@@ -3,13 +3,14 @@ import {
     products
 } from "./database";
 import express, {Request, Response} from 'express';
-import { PRODUCT_CATEGORY } from './types';
+import { PRODUCT_CATEGORY, TProductOnPurchase } from './types';
 import cors from 'cors';
 import { db } from "./database/knex";
 import { 
     passwordRegex,
     emailRegex
  } from "./regex";
+import { TProduct } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -18,7 +19,10 @@ app.use(cors());
 // Get all users
 app.get("/users", async (req: Request, res: Response) => {
     try {
+        // query para buscar todos os users
         const result = await db("users");
+
+        // Substituindo snake_case por camelCase
         const output = result.map(({ id, name, email, password, created_at }) => ({
             id,
             name,
@@ -26,6 +30,7 @@ app.get("/users", async (req: Request, res: Response) => {
             password,
             createdAt: created_at
         }));
+        
         res.status(200).send(output);
     } catch (error) {
         console.log(error);
@@ -138,7 +143,7 @@ app.post("/users", async (req: Request, res: Response) => {
 app.post("/products", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body
-        const {id, name, price, description, image_url} = req.body;
+        const {id, name, price, description, imageUrl} = req.body;
         const category = req.body.category as PRODUCT_CATEGORY;
 
         // id precisa existir e ser uma string
@@ -191,10 +196,10 @@ app.post("/products", async (req: Request, res: Response) => {
             throw new Error ("'description' deve ter no mínimo 2 caracteres");
         }
 
-        // image_url precisa existir e ser uma string
-        if (typeof image_url !== "string"){
+        // imageUrl precisa existir e ser uma string
+        if (typeof imageUrl !== "string"){
             res.status(400);
-            throw new Error ("'image_url' deve existir e ser uma string");
+            throw new Error ("'imageUrl' deve existir e ser uma string");
         }
         // URLs podem ter muitos formatos. Fica pendente ver se vale alguma outra verificação
 
@@ -219,7 +224,7 @@ app.post("/products", async (req: Request, res: Response) => {
             name,
             price,
             description,
-            imageUrl: image_url,
+            imageUrl,
             category
         };
 
@@ -411,7 +416,7 @@ app.put("/product/:id", async (req: Request, res: Response) => {
         await db("products").update(updatedProduct).where({id: idToEdit});
 
         res.status(200).send({
-            message: "Produto atualizado com sucesso!",
+            message: "Produto atualizado com sucesso",
             product: updatedProduct
         });
     } catch (error) {
@@ -428,6 +433,128 @@ app.put("/product/:id", async (req: Request, res: Response) => {
         }
     }
 });
+
+//Create purchase
+app.post("/purchases", async (req: Request, res: Response) => {
+    try {
+        // destructuring para pegar info que vem do body 
+        const { id, buyer, totalPrice, products } = req.body;
+
+        // id precisa existir e ser uma string
+        if (typeof id !== "string"){
+            res.status(400);
+            throw new Error ("'id' deve existir e ser uma string");
+        }
+        // purchase precisa ter id único
+        const idExists = await db("purchases").where({id: id});
+        if (idExists.length > 0){
+            res.status(400);
+            throw new Error ("Já existe uma 'purchase' com esse 'id'");
+        }
+        // id da purchase precisa ter no mínimo 7 caracteres
+        if (id.length < 7){
+            res.status(400);
+            throw new Error ("'id' precisa ter no mínimo 7 caracteres");
+        }
+
+        // id do buyer precisa existir e ser uma string
+        if (typeof buyer !== "string"){
+            res.status(400);
+            throw new Error ("'buyer' deve existir e ser uma string");
+        }
+        // deve haver um buyer que corresponda a esse id
+        const [ buyerExists ] = await db("users").where({id: buyer});
+        if (!buyerExists){
+            res.status(404);
+            throw new Error ("Não foi encontrado um user que corresponda ao id de 'buyer'");
+        }
+
+        // totalPrice deve existir e ser um number
+        if (typeof totalPrice !== "number"){
+            res.status(400);
+            throw new Error ("'totalPrice' deve existir e ser um number");
+        }
+        // totalPrice deve ser maior do que zero
+        if (totalPrice <= 0){
+            res.status(400);
+            throw new Error ("'totalPrice' deve ser maior do que zero");
+        }
+
+        // products deve ser um array 
+        if (Array.isArray(products)){
+            res.status(400);
+            throw new Error ("'products' deve existir e ser um array de produtos");
+        }
+        // products deve ter pelo menos 1 produto
+        if (products.length < 1){
+            res.status(400);
+            throw new Error ("'products' deve ter pelo menos 1 item");
+        }
+        // os itens de products estão de acordo com os produtos salvos no banco de dados?
+        // 'quantity' é um valor válido?
+        for (let i = 0; i < products.length; i++){
+            const product = products[i];
+            const productId = product["id"];
+
+            // existe um product com esse id no banco de dados?
+            const [ productInDb ] = await db("products").where({id: productId})
+            if (!productInDb){
+                res.status(404);
+                throw new Error (`Não foi encontrado um produto com id igual a ${productId}`);
+            }
+            // caso exista, vamos verificar se as informacões estão corretas
+            const properties = ["name", "price", "description", "imageUrl"];
+            properties.map(property => {
+                if (productInDb[property] !== product[property]){
+                    res.status(400);
+                    throw new Error (`O produto de id ${productId} está com ${property} incorreto(a)`);
+                }
+            })
+
+            // quantity precisa ser um number
+            if (typeof product["quantity"] !== "number"){
+                res.status(400);
+                throw new Error (`'quantity' do produto com id ${productId} precisa existir e ser um number`);
+            }
+            // quantity precisa ser maior que zero
+            if (product["quantity"] <= 0){
+                res.status(400);
+                throw new Error (`'quantity' do produto com id ${productId} precisa ser maior que zero`);
+            }
+            // quantity precisa ser um número inteiro
+            if (!Number.isInteger(product["quantity"])){
+                res.status(400);
+                throw new Error (`'quantity' do produto com id ${productId} precisa ser um inteiro`);
+            }
+        }
+
+        // totalPrice está de acordo com o array de products?
+        const totalSum = products.reduce((acc : number, product : TProductOnPurchase) => {
+            return acc + (product["quantity"] * product["price"]);
+        }, 0);
+        
+        if (totalSum !== totalPrice){
+            res.status(400);
+            throw new Error ("'totalPrice' não está de acordo com os preços e quantidades em 'products'");
+        }
+        
+        res.status(201).send({
+            message: "Pedido realizado com sucesso"
+        });
+    } catch (error) {
+        console.log(error);
+
+        if (req.statusCode === 200) {
+            res.status(500);
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
+    }
+})
 
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {

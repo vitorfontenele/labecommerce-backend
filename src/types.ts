@@ -8,7 +8,19 @@ export type TProduct = {
     id: string
     name: string
     price: number
+    description: string
+    imageUrl: string
     category: PRODUCT_CATEGORY
+}
+
+export type TProductOnPurchase = {
+    id: string
+    name: string
+    price: number
+    description: string
+    imageUrl: string
+    category: PRODUCT_CATEGORY
+    quantity: number
 }
 
 export type TPurchase = {
