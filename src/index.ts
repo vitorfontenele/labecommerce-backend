@@ -586,6 +586,42 @@ app.post("/purchases", async (req: Request, res: Response) => {
     }
 })
 
+// Delete Purchase by Id
+app.delete("/purchases/:id", async (req: Request, res: Response) => {
+    try {
+        // pegando id via path params
+        const idToDelete = req.params.id;
+
+        // idToDelete é uma string pois vem via path params
+
+        // verificando se a compra existe
+        const purchaseExists = await db("purchases").where({id: idToDelete});
+        if (purchaseExists.length > 0){
+            res.status(400);
+            throw new Error ("Não foi encontrada uma 'purchase' com esse 'id'");
+        }
+
+        // deletando a purchase
+        await db("purchases").del().where({id: idToDelete});
+
+        res.status(200).send({
+            message: "Pedido cancelado com sucesso"
+        })
+    } catch (error) {
+        console.log(error);
+
+        if (req.statusCode === 200) {
+            res.status(500);
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
+    }
+})
+
 // Get Purchase by Id
 app.get("/purchases/:id", async (req: Request, res: Response) => {
     try {
@@ -816,82 +852,6 @@ app.delete("/product/:id", (req: Request, res: Response) => {
     }  
 })
 */
-
-app.post("/purchases", async (req: Request, res: Response) => {
-    try {
-        const id = req.body.id;
-	    const buyerId = req.body.buyerId;
-	    const totalPrice = req.body.totalPrice;
-        const paid = req.body.paid;
-
-        if (id !== undefined){
-            if (typeof id !== "string"){
-                res.status(400);
-                throw new Error ("id deve ser uma string");
-            }
-
-            // Id da compra nao pode se repetir
-            // Implementar depois
-        } else {
-            res.status(400);
-            throw new Error ("Compra deve ter um id");
-        }
-
-        if (buyerId !== undefined){
-            if (typeof buyerId !== "string"){
-                res.status(400);
-                throw new Error ("buyerId deve ser uma string");
-            }
-
-            // Id do usuario deve existir
-            // const userExists = users.find(user => user.id === buyerId);
-            // if (!userExists){
-            //     res.status(404);
-            //     throw new Error ("Não há um usuário com esse id");
-            // }
-            
-        } else {
-            res.status(400);
-            throw new Error ("Compra deve ter um id de usuário");
-        }
-
-        if (totalPrice !== undefined){
-            if (typeof totalPrice !== "number"){
-                res.status(400);
-                throw new Error ("Preço total da compra deve ser um número");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Compra deve ter um preço total");
-        }
-
-        if (paid !== undefined){
-            if (typeof paid !== "number"){
-                res.status(400);
-                throw new Error ("Status de pago deve ser um número");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("Compra deve ter um status de pago");
-        }
-	
-	    // createPurchase(userId, productId, quantity, totalPrice);
-
-        await db.raw(
-            `INSERT INTO purchases(id, buyerId, totalPrice, paid) VALUES
-            ("${id}", "${buyerId}", "${totalPrice}", "${paid}")`
-        )
-	
-	    res.status(201).send("Compra realizada com sucesso");
-
-    } catch (error) {
-        console.log(error)
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
-})
 
 app.listen(3003, () => {
     console.log("Servidor rodando!");
