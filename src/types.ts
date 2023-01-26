@@ -1,31 +1,31 @@
-export type TUser = {
+export type TUserDB = {
     id: string
     name: string
     email: string
     password: string
-    createdAt: string
+    created_at: string
 }
 
-export type TProduct = {
+export type TProductDB = {
     id: string
     name: string
     price: number
     description: string
-    imageUrl: string
+    image_url: string
     category: PRODUCT_CATEGORY
 }
 
-export type TPurchaseProduct = {
-    purchaseId: string
-    productId: string
+export type TPurchaseProductDB = {
+    purchase_id: string
+    product_id: string
     quantity: number
 }
 
-export type TPurchase = {
+export type TPurchaseDB = {
     id: string
     buyer: string
-    totalPrice: number
-    createdAt: string
+    total_price: number
+    created_at: string
     paid: number
 }
 

@@ -1,17 +1,14 @@
 import express, {Request, Response} from 'express';
 import { 
-    TUser,
-    TProduct,
-    TPurchaseProduct,
-    TPurchase,
+    TUserDB,
+    TProductDB,
+    TPurchaseProductDB,
+    TPurchaseDB,
     PRODUCT_CATEGORY
  } from './types';
 import cors from 'cors';
 import { db } from "./database/knex";
-import { 
-    passwordRegex,
-    emailRegex
- } from "./regex";
+import { passwordRegex, emailRegex } from "./regex";
 
 // Configurando a instância do express
 const app = express();
