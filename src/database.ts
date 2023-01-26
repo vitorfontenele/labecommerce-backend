@@ -13,20 +13,20 @@ export const users : TUser[] = [
     }
 ];
 
-export const products : TProduct[] = [
-    {
-        id: "1",
-        name: "Sunscreen",
-        price: 5,
-        category: PRODUCT_CATEGORY.ACCESSORIES
-    },
-    {
-        id: "2",
-        name: "Sneakers",
-        price: 15,
-        category: PRODUCT_CATEGORY.CLOTHES_AND_SHOES
-    }
-]
+// export const products : TProduct[] = [
+//     {
+//         id: "1",
+//         name: "Sunscreen",
+//         price: 5,
+//         category: PRODUCT_CATEGORY.ACCESSORIES
+//     },
+//     {
+//         id: "2",
+//         name: "Sneakers",
+//         price: 15,
+//         category: PRODUCT_CATEGORY.CLOTHES_AND_SHOES
+//     }
+// ]
 
 export const purchases : TPurchase[] = [
     {
@@ -56,27 +56,27 @@ export function getAllUsers() : TUser[]{
     return users;
 }
 
-export function createProduct(id : string, name : string, price : number, category : PRODUCT_CATEGORY) : string{
-    products.push({
-        id,
-        name,
-        price,
-        category
-    })
-    return ("Produto criado com sucesso");
-}
+// export function createProduct(id : string, name : string, price : number, category : PRODUCT_CATEGORY) : string{
+//     products.push({
+//         id,
+//         name,
+//         price,
+//         category
+//     })
+//     return ("Produto criado com sucesso");
+// }
 
-export function getAllProducts() : TProduct[]{
-    return products;
-}
+// export function getAllProducts() : TProduct[]{
+//     return products;
+// }
 
-export function getProductById(id : string) : (undefined | TProduct){
-    return products.find(product => product.id === id);
-}
+// export function getProductById(id : string) : (undefined | TProduct){
+//     return products.find(product => product.id === id);
+// }
 
-export function queryProductsByName(q : string) : TProduct[]{
-    return products.filter(product => product.name.toLowerCase().includes(q.toLowerCase()));
-}
+// export function queryProductsByName(q : string) : TProduct[]{
+//     return products.filter(product => product.name.toLowerCase().includes(q.toLowerCase()));
+// }
 
 export function createPurchase(userId : string, productId : string, quantity : number, totalPrice : number) : string{
     purchases.push({

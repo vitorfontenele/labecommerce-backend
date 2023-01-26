@@ -121,11 +121,11 @@ DROP TABLE purchases;
 
 CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
-    buyerId TEXT NOT NULL,
-    totalPrice REAL UNIQUE NOT NULL,
-    createdAt TEXT DEFAULT(DATETIME('now', 'localtime')) NOT NULL,
-    paid INTEGER NOT NULL,
-    FOREIGN KEY (buyerId) REFERENCES users(id)
+    buyer TEXT NOT NULL,
+    total_price REAL NOT NULL,
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL,
+    paid INTEGER DEFAULT(0) NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
 );
 
 -- Exercicio 2

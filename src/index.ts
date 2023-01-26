@@ -1,7 +1,3 @@
-import { 
-    users, 
-    products
-} from "./database";
 import express, {Request, Response} from 'express';
 import { PRODUCT_CATEGORY, TProductOnPurchase } from './types';
 import cors from 'cors';
@@ -10,7 +6,7 @@ import {
     passwordRegex,
     emailRegex
  } from "./regex";
-import { TProduct } from "./types";
+//import { TProduct } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -451,10 +447,10 @@ app.post("/purchases", async (req: Request, res: Response) => {
             res.status(400);
             throw new Error ("Já existe uma 'purchase' com esse 'id'");
         }
-        // id da purchase precisa ter no mínimo 7 caracteres
-        if (id.length < 7){
+        // id da purchase precisa ter no mínimo 6 caracteres
+        if (id.length < 6){
             res.status(400);
-            throw new Error ("'id' precisa ter no mínimo 7 caracteres");
+            throw new Error ("'id' precisa ter no mínimo 6 caracteres");
         }
 
         // id do buyer precisa existir e ser uma string
@@ -481,7 +477,7 @@ app.post("/purchases", async (req: Request, res: Response) => {
         }
 
         // products deve ser um array 
-        if (Array.isArray(products)){
+        if (!Array.isArray(products)){
             res.status(400);
             throw new Error ("'products' deve existir e ser um array de produtos");
         }
@@ -490,52 +486,86 @@ app.post("/purchases", async (req: Request, res: Response) => {
             res.status(400);
             throw new Error ("'products' deve ter pelo menos 1 item");
         }
-        // os itens de products estão de acordo com os produtos salvos no banco de dados?
-        // 'quantity' é um valor válido?
+        // os itens de products devem estar de acordo com os produtos salvos no banco de dados
+        // quantity precisa ser um valor válido
         for (let i = 0; i < products.length; i++){
             const product = products[i];
             const productId = product["id"];
-
-            // existe um product com esse id no banco de dados?
+            
+            // precisa haver uma propriedade 'id' dentro de product e precisa ser uma string
+            if (typeof productId !== "string"){
+                res.status(400);
+                throw new Error ("Todo item de 'products' deve possuir um 'id' e este deve ser uma string");
+            }
+            // precisa haver um product com esse id no banco de dados
             const [ productInDb ] = await db("products").where({id: productId})
             if (!productInDb){
                 res.status(404);
-                throw new Error (`Não foi encontrado um produto com id igual a ${productId}`);
+                throw new Error (`Não foi encontrado um produto com 'id' igual a '${productId}'`);
             }
-            // caso exista, vamos verificar se as informacões estão corretas
+            // caso exista, vamos verificar se as informacões estão corretas            
+            // atenção com o case de imageUrl na variável que vem do banco de dados
             const properties = ["name", "price", "description", "imageUrl"];
+            productInDb["imageUrl"] = productInDb["image_url"];
             properties.map(property => {
                 if (productInDb[property] !== product[property]){
                     res.status(400);
-                    throw new Error (`O produto de id ${productId} está com ${property} incorreto(a)`);
+                    throw new Error (`O produto de id '${productId}' está com '${property}' incorreto(a)`);
                 }
             })
 
             // quantity precisa ser um number
             if (typeof product["quantity"] !== "number"){
                 res.status(400);
-                throw new Error (`'quantity' do produto com id ${productId} precisa existir e ser um number`);
+                throw new Error (`'quantity' do produto com id '${productId}' precisa existir e ser um number`);
             }
             // quantity precisa ser maior que zero
             if (product["quantity"] <= 0){
                 res.status(400);
-                throw new Error (`'quantity' do produto com id ${productId} precisa ser maior que zero`);
+                throw new Error (`'quantity' do produto com id '${productId}' precisa ser maior que zero`);
             }
             // quantity precisa ser um número inteiro
             if (!Number.isInteger(product["quantity"])){
                 res.status(400);
-                throw new Error (`'quantity' do produto com id ${productId} precisa ser um inteiro`);
+                throw new Error (`'quantity' do produto com id '${productId}' precisa ser um inteiro`);
             }
         }
 
-        // totalPrice está de acordo com o array de products?
-        const totalSum = products.reduce((acc : number, product : TProductOnPurchase) => {
+        // totalPrice precisa estar de acordo com o array de products
+        const totalSum = products.reduce((acc : number, product : any) => {
             return acc + (product["quantity"] * product["price"]);
         }, 0);
         
         if (totalSum !== totalPrice){
             res.status(400);
             throw new Error ("'totalPrice' não está de acordo com os preços e quantidades em 'products'");
+        }
+
+        // nova compra
+        const newPurchase = {
+            id,
+            buyer,
+            total_price: totalPrice
+        }
+
+        // inserindo compra na tabela 'purchases'
+        await db("purchases").insert(newPurchase);
+
+        // Parte mais difícil: inserir dados em purchases_products
+        for (let i = 0; i < products.length; i++){
+            const product = products[i];
+            const productId = product["id"];
+            const productQuantity = product["quantity"];
+
+            // Item a inserir em purchases_products
+            const newPurchasesProductsItem = {
+                purchase_id: id,
+                product_id: productId,
+                quantity: productQuantity
+            };
+
+            // Inserindo novo item
+            await db("purchases_products").insert(newPurchasesProductsItem);
         }
         
         res.status(201).send({
@@ -578,13 +608,14 @@ app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     }
 })
 
+/*
 app.put("/user/:id", (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         const email = req.body.email;
         const password = req.body.password;
 
-        const user = users.find(user => user.id === id);
+        // const user = users.find(user => user.id === id);
 
         if (!user) {
             res.status(404);
@@ -619,7 +650,9 @@ app.put("/user/:id", (req: Request, res: Response) => {
     }
     
 })
+*/
 
+/*
 app.delete("/user/:id", (req: Request, res: Response) => {
     try {
         const id = req.params.id;
@@ -639,6 +672,7 @@ app.delete("/user/:id", (req: Request, res: Response) => {
         res.send(error.message);
     }  
 })
+*/
 
 app.get("/products/:id", async (req: Request, res: Response) => {
     try {
@@ -708,6 +742,7 @@ app.get("/product/search", async (req: Request, res: Response) => {
     
 })
 
+/*
 app.delete("/product/:id", (req: Request, res: Response) => {
     try {
         const id = req.params.id;
@@ -727,6 +762,7 @@ app.delete("/product/:id", (req: Request, res: Response) => {
         res.send(error.message);
     }  
 })
+*/
 
 app.post("/purchases", async (req: Request, res: Response) => {
     try {
