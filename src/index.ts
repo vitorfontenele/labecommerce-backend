@@ -1,13 +1,19 @@
 import express, {Request, Response} from 'express';
-import { PRODUCT_CATEGORY, TProductOnPurchase } from './types';
+import { 
+    TUser,
+    TProduct,
+    TPurchaseProduct,
+    TPurchase,
+    PRODUCT_CATEGORY
+ } from './types';
 import cors from 'cors';
 import { db } from "./database/knex";
 import { 
     passwordRegex,
     emailRegex
  } from "./regex";
-//import { TProduct } from "./types";
 
+// Configurando a instância do express
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -676,184 +682,6 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
         res.send(error.message);
     }
 });
-
-app.get("/users/:id/purchases", async (req: Request, res: Response) => {
-    try {
-        const userId = req.params.id;
-        // const result = purchases.filter(purchase => purchase.userId === userId);
-
-        const result = await db("purchases").where({buyerId: userId});
-
-        if (result.length < 1){
-            res.status(404);
-            throw new Error ("Nenhuma compra entrada");
-        }
-
-        res.status(200).send(result);
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
-})
-
-/*
-app.put("/user/:id", (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const email = req.body.email;
-        const password = req.body.password;
-
-        // const user = users.find(user => user.id === id);
-
-        if (!user) {
-            res.status(404);
-            throw new Error ("Usuário não encontrado");
-        }
-
-        if (email !== undefined){
-            if (typeof email !== "string"){
-                res.status(400);
-                throw new Error ("Email deve ser uma string");
-            }
-        }
-
-        if (password !== undefined){
-            if (typeof password !== "string"){
-                res.status(400);
-                throw new Error ("Senha deve ser uma string");
-            }
-        }
-
-        // Atualização dos dados
-        user.email = email || user.email;
-        user.password = password || user.password;
-
-        res.status(200).send("Cadastro atualizado com sucesso");
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
-    
-})
-*/
-
-/*
-app.delete("/user/:id", (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const userIndex = users.findIndex(user => user.id === id);
-        if (userIndex >= 0){
-            users.splice(userIndex, 1);
-        } else {
-            res.status(404);
-            throw new Error ("Usuário não encontrado");
-        }
-        res.status(200).send("User apagado com sucesso");
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }  
-})
-*/
-
-app.get("/products/:id", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        // const result = products.find(product => product.id === id);
-
-        const [result] = await db.raw(
-            `SELECT * FROM products
-            WHERE id = "${id}"`
-        );
-
-        if (!result){
-            res.status(404);
-            throw new Error ("Produto não encontrado");
-        }
-
-        res.status(200).send(result);
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }   
-})
-
-app.get("/purchases", async (req: Request, res: Response) => {
-    try {
-        const result = await db.raw(
-            "SELECT * FROM purchases;"
-        )
-        res.status(200).send(result);    
-    } catch (error : any) {
-        res.status(500);
-        console.log(error);
-        res.send(error.message);
-    } 
-})
-
-app.get("/product/search", async (req: Request, res: Response) => {
-    try {
-        const q = req.query.q as string;
-
-        if (q !== undefined){
-            if (q.length < 1){
-                res.status(400);
-                throw new Error ("'q' deve possuir ao menos um caracter");
-            }
-        } else {
-            res.status(400);
-            throw new Error ("'q' precisa ser definido");
-        }
-        // const result = queryProductsByName(q);
-        const product = await db.raw(`
-            SELECT * FROM products
-            WHERE name LIKE('%${q}%');
-        `)
-
-        res.status(200).send(product);
-    } catch (error) {
-        console.log(error)
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
-    
-})
-
-/*
-app.delete("/product/:id", (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const productIndex = products.findIndex(product => product.id === id);
-        if (productIndex >= 0){
-            users.splice(productIndex, 1);
-        } else {
-            res.status(404);
-            throw new Error ("Produto não encontrado");
-        }
-        res.status(200).send("Produto apagado com sucesso");
-    } catch (error) {
-        console.log(error);
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }  
-})
-*/
 
 app.listen(3003, () => {
     console.log("Servidor rodando!");
