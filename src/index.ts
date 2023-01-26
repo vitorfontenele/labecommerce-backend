@@ -246,6 +246,49 @@ app.post("/products", async (req: Request, res: Response) => {
     }
 });
 
+// Get All Products (funcionalidades 1 e 2)
+app.get("/products", async (req: Request, res: Response) => {
+    try {
+        // possível query param
+        const { q } = req.query;
+
+        // variavel para armazenar a busca
+        let result;
+
+        if (q === undefined){
+            // Quando não houver query params
+            result = await db("products");
+        } else {
+            // Quando houver query params
+            result = await db("products").where("name", "LIKE", `%${q}%`);
+        }
+
+        // Substituindo snake_case por camelCase
+        const output = result.map(({id, name, price, description, image_url, category}) => ({
+            id,
+            name,
+            price,
+            description,
+            imageUrl: image_url,
+            category
+        }))
+
+        res.status(200).send(output);
+    } catch (error) {
+        console.log(error);
+
+        if (req.statusCode === 200) {
+            res.status(500);
+        }
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
+    }
+})
+
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
@@ -328,17 +371,6 @@ app.delete("/user/:id", (req: Request, res: Response) => {
         }
         res.send(error.message);
     }  
-})
-
-app.get("/products", async (req: Request, res: Response) => {
-    try {
-        const result = await db("products");
-        res.status(200).send(result);
-    } catch (error) {
-        res.status(500);
-        console.log(error);
-        res.send(error.message);
-    }
 })
 
 app.get("/products/:id", async (req: Request, res: Response) => {
