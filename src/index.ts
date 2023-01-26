@@ -10,7 +10,6 @@ import {
     passwordRegex,
     emailRegex
  } from "./regex";
-import { readdirSync } from "fs";
 
 const app = express();
 app.use(express.json());
@@ -289,6 +288,61 @@ app.get("/products", async (req: Request, res: Response) => {
     }
 })
 
+// Edit Product by Id
+app.put("/product/:id", (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        const name = req.body.name;
+        const price = req.body.price;
+        const category = req.body.category;
+
+        const product = products.find(product => product.id === id);
+
+        if (!product){
+            res.status(404);
+            throw new Error ("Produto não encontrado");
+        }
+
+        if (name !== undefined){
+            if (typeof name !== "string"){
+                res.status(400);
+                throw new Error ("Nome do produto deve ser uma string");
+            }
+        }
+
+        if (price !== undefined){
+            if (typeof price !== "number"){
+                res.status(400);
+                throw new Error ("Preço do produto deve ser um número");
+            }
+        }
+
+        if (category !== undefined){
+            if (
+                category !== "Acessórios" &&
+                category !== "Roupas" &&
+                category !== "Eletrônicos"
+            ){
+                res.status(400);
+                throw new Error ("Categoria deve ser uma das existentes");
+            }
+        }
+
+        // Atualizando os dados
+        product.name = name || product.name;
+        product.price = price || product.price;
+        product.category = category || product.category;
+
+        res.status(200).send("Produto atualizado com sucesso!");
+    } catch (error) {
+        console.log(error)
+        if (res.statusCode === 200){
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+});
+
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
@@ -439,60 +493,6 @@ app.get("/product/search", async (req: Request, res: Response) => {
         res.send(error.message);
     }
     
-})
-
-app.put("/product/:id", (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const name = req.body.name;
-        const price = req.body.price;
-        const category = req.body.category;
-
-        const product = products.find(product => product.id === id);
-
-        if (!product){
-            res.status(404);
-            throw new Error ("Produto não encontrado");
-        }
-
-        if (name !== undefined){
-            if (typeof name !== "string"){
-                res.status(400);
-                throw new Error ("Nome do produto deve ser uma string");
-            }
-        }
-
-        if (price !== undefined){
-            if (typeof price !== "number"){
-                res.status(400);
-                throw new Error ("Preço do produto deve ser um número");
-            }
-        }
-
-        if (category !== undefined){
-            if (
-                category !== "Acessórios" &&
-                category !== "Roupas" &&
-                category !== "Eletrônicos"
-            ){
-                res.status(400);
-                throw new Error ("Categoria deve ser uma das existentes");
-            }
-        }
-
-        // Atualizando os dados
-        product.name = name || product.name;
-        product.price = price || product.price;
-        product.category = category || product.category;
-
-        res.status(200).send("Produto atualizado com sucesso!");
-    } catch (error) {
-        console.log(error)
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
 })
 
 app.delete("/product/:id", (req: Request, res: Response) => {
