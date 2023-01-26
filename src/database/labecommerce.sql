@@ -1,6 +1,5 @@
 -- Intro SQL
 DROP TABLE users;
-DROP TABLE products;
 
 -- query a
 CREATE TABLE users (
@@ -8,35 +7,37 @@ CREATE TABLE users (
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    createdAt TEXT DEFAULT(DATETIME('now', 'localtime')) NOT NULL
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL
 );
 
 -- query b
 INSERT INTO users(id, name, email, password) VALUES
-    ("1", "Dorothy", "dorothygale@gmail.com", "dvnvndsfv"),
-    ("2", "Scarecrow", "scarecrow@hotmail.com", "12345"),
-    ("3", "Tin Man", "tinman@outlook.com", "password");
+    ("u001", "Dorothy", "dorothygale@gmail.com", "dvnvndsfv"),
+    ("u002", "Scarecrow", "scarecrow@hotmail.com", "12345"),
+    ("u003", "Tin Man", "tinman@outlook.com", "password");
 
 -- query c
 SELECT * FROM users;
 
 -- query d
+DROP TABLE products;
+
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
     price REAL NOT NULL,
     description TEXT NOT NULL,
-    imageUrl TEXT NOT NULL,
+    image_url TEXT NOT NULL,
     category TEXT NOT NULL
 );
 
 -- query e
-INSERT INTO products VALUES
-    ("p001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://static.beautytocare.com/media/catalog/product/cache/global/image/1300x1300/85e4522595efc69f496374d01ef2bf13/e/s/esthederm-sun-photo-regul-sunscreen-pigmentation-irregularities-50ml-2.jpg", "Acessories"),
-    ("p002", "Backpack", 50, "Your best friend during your daily commute.", "https://www.helikon-tex.com/media/catalog/product/cache/4/image/9df78eab33525d08d6e5fb8d27136e95/p/l/pl-dtn-nl-1919.jpg", "Acessories"),
-    ("p003", "Keyboard", 30, "If you need to write, you need to type.", "https://m.media-amazon.com/images/I/71TKFcoGIJL._AC_SS450_.jpg", "Electronics"),
-    ("p004", "Webcam", 70, "Show your face to the world with this amazing webcam.", "https://wb.fbitsstatic.net/img/p/256796/webcam-full-hd-1080p-wb-amplo-angulo-110%C2%B0-70183/256796.jpg?w=1200&h=1200", "Electronics"),
-    ("p005", "Radio", 60, "Sometimes you need it a bit old-fashoned.", "https://cf.shopee.com.br/file/sg-11134201-23010-pncsckm0c0lv79", "Electronics");
+INSERT INTO products(id, name, price, description, image_url, category) VALUES
+    ("prod001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://static.beautytocare.com/media/catalog/product/cache/global/image/1300x1300/85e4522595efc69f496374d01ef2bf13/e/s/esthederm-sun-photo-regul-sunscreen-pigmentation-irregularities-50ml-2.jpg", "Acessories"),
+    ("prod002", "Backpack", 50, "Your best friend during your daily commute.", "https://www.helikon-tex.com/media/catalog/product/cache/4/image/9df78eab33525d08d6e5fb8d27136e95/p/l/pl-dtn-nl-1919.jpg", "Acessories"),
+    ("prod003", "Keyboard", 30, "If you need to write, you need to type.", "https://m.media-amazon.com/images/I/71TKFcoGIJL._AC_SS450_.jpg", "Electronics"),
+    ("prod004", "Webcam", 70, "Show your face to the world with this amazing webcam.", "https://wb.fbitsstatic.net/img/p/256796/webcam-full-hd-1080p-wb-amplo-angulo-110%C2%B0-70183/256796.jpg?w=1200&h=1200", "Electronics"),
+    ("prod005", "Radio", 60, "Sometimes you need it a bit old-fashoned.", "https://cf.shopee.com.br/file/sg-11134201-23010-pncsckm0c0lv79", "Electronics");
 
 -- query f
 SELECT * FROM products;
@@ -120,11 +121,11 @@ DROP TABLE purchases;
 
 CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
-    buyerId TEXT NOT NULL,
-    totalPrice REAL UNIQUE NOT NULL,
-    createdAt TEXT DEFAULT(DATETIME('now', 'localtime')) NOT NULL,
-    paid INTEGER NOT NULL,
-    FOREIGN KEY (buyerId) REFERENCES users(id)
+    buyer TEXT NOT NULL,
+    total_price REAL NOT NULL,
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL,
+    paid INTEGER DEFAULT(0) NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
 );
 
 -- Exercicio 2
@@ -191,3 +192,28 @@ INNER JOIN purchases
 ON purchases_products.purchase_id = purchases.id
 RIGHT JOIN products
 ON purchases_products.product_id = products.id;
+
+SELECT 
+purchases.id AS purchaseId,
+purchases.buyer AS purchaseBuyer,
+users.name AS buyerName,
+users.email AS buyerEmail,
+purchases.total_price AS totalPrice,
+purchases.created_at AS createdAt,
+purchases.paid AS paid
+FROM purchases
+INNER JOIN users
+ON purchases.buyer = users.id
+WHERE purchases.id = "pur001";
+
+SELECT
+products.id AS id,
+products.name AS name,
+products.price AS price,
+products.description AS description,
+products.image_url AS imageUrl,
+purchases_products.quantity AS quantity
+FROM purchases_products
+INNER JOIN products
+ON purchases_products.product_id = products.id
+WHERE purchases_products.purchase_id = "pur001";
