@@ -12,7 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Get all users
+// Get All Users
 app.get("/users", async (req: Request, res: Response) => {
     try {
         // query para buscar todos os users
@@ -43,7 +43,7 @@ app.get("/users", async (req: Request, res: Response) => {
     }   
 });
 
-// Create user
+// Create User
 app.post("/users", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body
@@ -135,7 +135,7 @@ app.post("/users", async (req: Request, res: Response) => {
     }
 });
 
-// Create product
+// Create Product
 app.post("/products", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body
@@ -220,7 +220,7 @@ app.post("/products", async (req: Request, res: Response) => {
             name,
             price,
             description,
-            imageUrl,
+            image_url: imageUrl,
             category
         };
 
@@ -404,7 +404,7 @@ app.put("/product/:id", async (req: Request, res: Response) => {
             name: newName || productToEdit.name,
             price: newPrice || productToEdit.price,
             description: newDescription || productToEdit.description,
-            imageUrl: newImageUrl || productToEdit.imageUrl,
+            image_url: newImageUrl || productToEdit.imageUrl,
             category: newCategory || productToEdit.category
         }
 
@@ -430,7 +430,7 @@ app.put("/product/:id", async (req: Request, res: Response) => {
     }
 });
 
-//Create purchase
+// Create Purchase
 app.post("/purchases", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body 
@@ -585,6 +585,59 @@ app.post("/purchases", async (req: Request, res: Response) => {
         }
     }
 })
+
+// Get Purchase by Id
+app.get("/purchases/:id", async (req: Request, res: Response) => {
+    try {
+        // Pegando id via path params
+        const id = req.params.id;
+
+        // id é obrigatoriamente string pois vem via path params
+
+        // Verificando se há alguma compra com esse id
+        const [result] = await db("purchases").where({id: id});
+        if (!result){
+            res.status(404);
+            throw new Error ("Compra não encontrada");
+        }
+
+        // Pegando primeira parte da resposta da requisição
+        const [ output ] = await db("purchases")
+        .select(
+            'purchases.id AS purchaseId', 
+            'purchases.buyer AS buyerId', 
+            'users.name AS buyerName', 
+            'users.email AS buyerEmail', 
+            'purchases.total_price AS totalPrice', 
+            'purchases.created_at AS createdAt', 
+            'purchases.paid AS paid')
+        .innerJoin('users', 'purchases.buyer', 'users.id')
+        .where('purchases.id', id);
+
+        // Segunda parte da resposta (array de products)
+        const products = await db('purchases_products')
+        .select(
+            'products.id AS id', 
+            'products.name AS name', 
+            'products.price AS price', 
+            'products.description AS description', 
+            'products.image_url AS imageUrl', 
+            'purchases_products.quantity AS quantity')
+        .innerJoin('products', 'purchases_products.product_id', 'products.id')
+        .where('purchases_products.purchase_id', id);
+
+        // Colocando array de products na resposta
+        output["products"] = products;
+
+        res.status(200).send(output);
+    } catch (error) {
+        console.log(error)
+        if (res.statusCode === 200){
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+});
 
 app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
@@ -839,30 +892,6 @@ app.post("/purchases", async (req: Request, res: Response) => {
         res.send(error.message);
     }
 })
-
-app.get("/purchases/:id", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id;
-        const [result] = await db("purchases").where({id: id});
-
-        if (!result){
-            res.status(404);
-            throw new Error ("Compra não encontrada");
-        }
-
-        const [user] = await db("users").where({id: result.buyerId});
-        result["name"] = user.name;
-        result["email"] = user.email;
-
-        res.status(200).send(result);
-    } catch (error) {
-        console.log(error)
-        if (res.statusCode === 200){
-            res.status(500);
-        }
-        res.send(error.message);
-    }
-});
 
 app.listen(3003, () => {
     console.log("Servidor rodando!");

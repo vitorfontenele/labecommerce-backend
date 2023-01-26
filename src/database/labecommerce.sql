@@ -192,3 +192,28 @@ INNER JOIN purchases
 ON purchases_products.purchase_id = purchases.id
 RIGHT JOIN products
 ON purchases_products.product_id = products.id;
+
+SELECT 
+purchases.id AS purchaseId,
+purchases.buyer AS purchaseBuyer,
+users.name AS buyerName,
+users.email AS buyerEmail,
+purchases.total_price AS totalPrice,
+purchases.created_at AS createdAt,
+purchases.paid AS paid
+FROM purchases
+INNER JOIN users
+ON purchases.buyer = users.id
+WHERE purchases.id = "pur001";
+
+SELECT
+products.id AS id,
+products.name AS name,
+products.price AS price,
+products.description AS description,
+products.image_url AS imageUrl,
+purchases_products.quantity AS quantity
+FROM purchases_products
+INNER JOIN products
+ON purchases_products.product_id = products.id
+WHERE purchases_products.purchase_id = "pur001";
