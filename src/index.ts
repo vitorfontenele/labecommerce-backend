@@ -50,7 +50,7 @@ app.get("/users", async (req: Request, res: Response) => {
 app.post("/users", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body
-        const {id, name, email, password} = req.body;
+        const { id, name, email, password } = req.body;
 
         // id precisa existir e ser uma string
         if (typeof id !== "string"){
@@ -58,8 +58,8 @@ app.post("/users", async (req: Request, res: Response) => {
             throw new Error ("'id' deve existir e ser uma string");
         }
         // user precisa ter id único
-        const idExists = await db("users").where({id: id});
-        if (idExists.length > 0){
+        const idMatches : TUserDB[] = await db("users").where({ id });
+        if (idMatches.length > 0){
             res.status(400);
             throw new Error ("Já existe um usuário com esse 'id'");
         }
@@ -86,8 +86,8 @@ app.post("/users", async (req: Request, res: Response) => {
             throw new Error ("'email' deve existir e ser uma string");
         }
         // email precisa ser único
-        const emailExists = await db("users").where({email: email});
-        if (emailExists.length > 0){
+        const emailMatches : TUserDB[] = await db("users").where({ email });
+        if (emailMatches.length > 0){
             res.status(400);
             throw new Error ("Já existe um usuário com esse 'email'");
         }
@@ -142,7 +142,7 @@ app.post("/users", async (req: Request, res: Response) => {
 app.post("/products", async (req: Request, res: Response) => {
     try {
         // destructuring para pegar info que vem do body
-        const {id, name, price, description, imageUrl} = req.body;
+        const { id, name, price, description, imageUrl } = req.body;
         const category = req.body.category as PRODUCT_CATEGORY;
 
         // id precisa existir e ser uma string
@@ -151,8 +151,8 @@ app.post("/products", async (req: Request, res: Response) => {
             throw new Error ("'id' deve existir e ser uma string");
         }
         // product precisa ter id único
-        const idExists = await db("products").where({id: id});
-        if (idExists.length > 0){
+        const idMatches : TProductDB[] = await db("products").where({ id });
+        if (idMatches.length > 0){
             res.status(400);
             throw new Error ("Já existe um 'product' com esse 'id'");
         }
@@ -218,7 +218,7 @@ app.post("/products", async (req: Request, res: Response) => {
         }
         
         // novo produto a ser inserido
-        const newProduct = {
+        const newProduct : TProductDB = {
             id,
             name,
             price,
@@ -255,8 +255,8 @@ app.get("/products", async (req: Request, res: Response) => {
         // possível query param
         const { q } = req.query;
 
-        // variavel para armazenar a busca
-        let result;
+        // variável para armazenar a busca
+        let result : TProductDB[];
 
         if (q === undefined){
             // Quando não houver query params
@@ -315,8 +315,8 @@ app.put("/product/:id", async (req: Request, res: Response) => {
                 throw new Error ("'id' precisa ser uma string");
             }
             // newId precisa ser diferente dos que já existem
-            const newIdExists = await db("products").where({id: newId});
-            if (newIdExists.length > 0){
+            const newIdMatches : TProductDB[] = await db("products").where({ id: newId });
+            if (newIdMatches.length > 0){
                 res.status(400);
                 throw new Error ("Já existe um 'product' com esse 'id'");
             }
@@ -393,12 +393,12 @@ app.put("/product/:id", async (req: Request, res: Response) => {
         }
 
         // produto a ser editado
-        const [productToEdit] = await db("products").where({id: idToEdit});
+        const [ productToEdit ] : TProductDB[] | undefined[] = await db("products").where({ id: idToEdit });
 
         // caso não haja um produto com id === idToEdit
         if (!productToEdit){
             res.status(404);
-            throw new Error ("Não foi encontrado um produto existente com id indicado para ser editado");
+            throw new Error ("Não foi encontrado um produto existente com 'id' indicado para ser editado");
         }
 
         // produto atualizado
@@ -407,12 +407,12 @@ app.put("/product/:id", async (req: Request, res: Response) => {
             name: newName || productToEdit.name,
             price: newPrice || productToEdit.price,
             description: newDescription || productToEdit.description,
-            image_url: newImageUrl || productToEdit.imageUrl,
+            image_url: newImageUrl || productToEdit.image_url,
             category: newCategory || productToEdit.category
         }
 
         // query para atualizar o produto
-        await db("products").update(updatedProduct).where({id: idToEdit});
+        await db("products").update(updatedProduct).where({ id: idToEdit });
 
         res.status(200).send({
             message: "Produto atualizado com sucesso",
@@ -445,8 +445,8 @@ app.post("/purchases", async (req: Request, res: Response) => {
             throw new Error ("'id' deve existir e ser uma string");
         }
         // purchase precisa ter id único
-        const idExists = await db("purchases").where({id: id});
-        if (idExists.length > 0){
+        const idMatches : TPurchaseDB[] = await db("purchases").where({ id });
+        if (idMatches.length > 0){
             res.status(400);
             throw new Error ("Já existe uma 'purchase' com esse 'id'");
         }
@@ -462,7 +462,7 @@ app.post("/purchases", async (req: Request, res: Response) => {
             throw new Error ("'buyer' deve existir e ser uma string");
         }
         // deve haver um buyer que corresponda a esse id
-        const [ buyerExists ] = await db("users").where({id: buyer});
+        const [ buyerExists ] : TUserDB[] | undefined[] = await db("users").where({ id: buyer });
         if (!buyerExists){
             res.status(404);
             throw new Error ("Não foi encontrado um user que corresponda ao id de 'buyer'");
@@ -501,21 +501,24 @@ app.post("/purchases", async (req: Request, res: Response) => {
                 throw new Error ("Todo item de 'products' deve possuir um 'id' e este deve ser uma string");
             }
             // precisa haver um product com esse id no banco de dados
-            const [ productInDb ] = await db("products").where({id: productId})
+            const [ productInDb ] : TProductDB[] | undefined[] = await db("products").where({ id: productId })
             if (!productInDb){
                 res.status(404);
                 throw new Error (`Não foi encontrado um produto com 'id' igual a '${productId}'`);
             }
             // caso exista, vamos verificar se as informacões estão corretas            
-            // atenção com o case de imageUrl na variável que vem do banco de dados
-            const properties = ["name", "price", "description", "imageUrl"];
-            productInDb["imageUrl"] = productInDb["image_url"];
+            const properties = ["name", "price", "description"];
             properties.map(property => {
-                if (productInDb[property] !== product[property]){
+                if (productInDb[property as keyof TProductDB] !== product[property]){
                     res.status(400);
                     throw new Error (`O produto de id '${productId}' está com '${property}' incorreto(a)`);
                 }
             })
+            // verificamos image_url / imageUrl separadamente por conta da diferença de case
+            if (productInDb["image_url"] !== product["imageUrl"]){
+                res.status(400);
+                throw new Error (`O produto de id '${productId}' está com 'imageUrl' incorreto(a)`);
+            }
 
             // quantity precisa ser um number
             if (typeof product["quantity"] !== "number"){
@@ -561,7 +564,7 @@ app.post("/purchases", async (req: Request, res: Response) => {
             const productQuantity = product["quantity"];
 
             // Item a inserir em purchases_products
-            const newPurchasesProductsItem = {
+            const newPurchasesProductsItem : TPurchaseProductDB = {
                 purchase_id: id,
                 product_id: productId,
                 quantity: productQuantity
@@ -598,16 +601,16 @@ app.delete("/purchases/:id", async (req: Request, res: Response) => {
         // idToDelete é uma string pois vem via path params
 
         // verificando se a compra existe
-        const purchaseExists = await db("purchases").where({id: idToDelete});
-        if (purchaseExists.length > 0){
+        const purchaseMatches : TPurchaseDB[] = await db("purchases").where({ id: idToDelete });
+        if (purchaseMatches.length > 0){
             res.status(400);
             throw new Error ("Não foi encontrada uma 'purchase' com esse 'id'");
         }
 
         // deletando a purchase
         // (deletar na tabela em que há relações antes)
-        await db("purchases_products").where({purchase_id: idToDelete});
-        await db("purchases").del().where({id: idToDelete});
+        await db("purchases_products").where({ purchase_id: idToDelete });
+        await db("purchases").del().where({ id: idToDelete });
 
         res.status(200).send({
             message: "Pedido cancelado com sucesso"
@@ -636,7 +639,7 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
         // id é obrigatoriamente string pois vem via path params
 
         // Verificando se há alguma compra com esse id
-        const [result] = await db("purchases").where({id: id});
+        const [ result ] : TPurchaseDB[] | undefined[] = await db("purchases").where({ id });
         if (!result){
             res.status(404);
             throw new Error ("Compra não encontrada");
@@ -672,11 +675,17 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
 
         res.status(200).send(output);
     } catch (error) {
-        console.log(error)
-        if (res.statusCode === 200){
+        console.log(error);
+
+        if (req.statusCode === 200) {
             res.status(500);
         }
-        res.send(error.message);
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        } else {
+            res.send("Erro inesperado");
+        }
     }
 });
 
