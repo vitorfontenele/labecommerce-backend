@@ -1,7 +1,10 @@
--- Intro SQL
-DROP TABLE users;
+-- Inicio das queries de manipulação de dados nas tabelas "users" e "products"
+-- As queries incluem operações como inserção, exclusão e seleção de dados
 
 -- query a
+DROP TABLE users;
+
+-- query b
 CREATE TABLE users (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
@@ -10,18 +13,25 @@ CREATE TABLE users (
     created_at TEXT DEFAULT (DATETIME()) NOT NULL
 );
 
--- query b
-INSERT INTO users(id, name, email, password) VALUES
-    ("u001", "Dorothy", "dorothygale@gmail.com", "dvnvndsfv"),
-    ("u002", "Scarecrow", "scarecrow@hotmail.com", "12345"),
-    ("u003", "Tin Man", "tinman@outlook.com", "password");
-
 -- query c
-SELECT * FROM users;
+INSERT INTO users(id, name, email, password) VALUES
+    ("u001", "John Smith", "johnsmith@gmail.com", "Pass1"),
+    ("u002", "Emily Brown", "emilybrown@gmail.com", "P@s2wrd"),
+    ("u003", "Jacob Davis", "jacobdavis@gmail.com", "s3cure"),
+    ("u004", "Michael Garcia", "michaelgarcia@gmail.com", "Sec1Pass"),
+    ("u005", "Madison Taylor", "madisontaylor@gmail.com", "Pass2!"),
+    ("u006", "Daniel Martinez", "danielmartinez@gmail.com", "P@ss3"),
+    ("u007", "Matthew Anderson", "matthewanderson@gmail.com", "S3c4Pass"),
+    ("u008", "Joshua Thompson", "joshuathompson@gmail.com", "p@ss5"),
+    ("u009", "Andrew Gonzalez", "andrewgonzalez@gmail.com", "SecP@s2");
 
 -- query d
+SELECT * FROM users;
+
+-- query e
 DROP TABLE products;
 
+-- query f
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
@@ -31,94 +41,25 @@ CREATE TABLE products (
     category TEXT NOT NULL
 );
 
--- query e
+-- query g
 INSERT INTO products(id, name, price, description, image_url, category) VALUES
-    ("prod001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://static.beautytocare.com/media/catalog/product/cache/global/image/1300x1300/85e4522595efc69f496374d01ef2bf13/e/s/esthederm-sun-photo-regul-sunscreen-pigmentation-irregularities-50ml-2.jpg", "Acessories"),
-    ("prod002", "Backpack", 50, "Your best friend during your daily commute.", "https://www.helikon-tex.com/media/catalog/product/cache/4/image/9df78eab33525d08d6e5fb8d27136e95/p/l/pl-dtn-nl-1919.jpg", "Acessories"),
-    ("prod003", "Keyboard", 30, "If you need to write, you need to type.", "https://m.media-amazon.com/images/I/71TKFcoGIJL._AC_SS450_.jpg", "Electronics"),
-    ("prod004", "Webcam", 70, "Show your face to the world with this amazing webcam.", "https://wb.fbitsstatic.net/img/p/256796/webcam-full-hd-1080p-wb-amplo-angulo-110%C2%B0-70183/256796.jpg?w=1200&h=1200", "Electronics"),
-    ("prod005", "Radio", 60, "Sometimes you need it a bit old-fashoned.", "https://cf.shopee.com.br/file/sg-11134201-23010-pncsckm0c0lv79", "Electronics");
+    ("prod001", "Sunscreen", 10, "Designed to protect you from UV radiation.", "https://dummy.com/sunscreen.jpg", "Acessories"),
+    ("prod002", "Sunglasses", 15, "Protect your eyes from the sun.", "https://dummy.com/sunglasses.jpg", "Acessories"),
+    ("prod003", "Blender", 25, "Blend and mix your ingredients with ease.", "https://dummy.com/blender.jpg", "Electronics"),
+    ("prod004", "Shirt", 30, "Comfortable and stylish.", "https://dummy.com/shirt.jpg", "Clothes and Shoes"),
+    ("prod005", "Pants", 40, "Perfect for any occasion.", "https://dummy.com/pants.jpg", "Clothes and Shoes"),
+    ("prod006", "Smartphone", 600, "Stay connected and productive.", "https://dummy.com/smartphone.jpg", "Electronics"),
+    ("prod007", "Laptop", 900, "Powerful and portable.", "https://dummy.com/laptop.jpg", "Electronics"),
+    ("prod008", "Watch", 100, "Stay on time and on style.", "https://dummy.com/watch.jpg", "Acessories"),
+    ("prod009", "Shoes", 50, "Comfortable and stylish.", "https://dummy.com/shoes.jpg", "Clothes and Shoes");
 
--- query f
-SELECT * FROM products;
+-- Inicio das queries de manipulação de dados nas tabelas "purchases" e "purchases_products"
+-- As queries incluem operações como inserção, exclusão e seleção de dados
 
--- Aprofundamento SQL
-
---------------
--- Exercicio 1
---------------
-
--- Get All Users
-SELECT * FROM users;
-
--- Get All Products
-SELECT * FROM products;
-
--- Search Product by Name
-SELECT * FROM products
-WHERE name LIKE "sunscreen";
-
--- Create User
-INSERT INTO users VALUES ("4", "toto@gmail.com", "auauau");
-
--- Create Product
-INSERT INTO products VALUES ("p006", "Mic", 45, "Electronics");
-
---------------
--- Exercicio 2
---------------
-
--- Get Products by id
-SELECT * FROM products
-WHERE id = "p002";
-
--- Delete User by id
-DELETE FROM users
-WHERE id = "4";
-
--- Delete Product by id
-DELETE FROM products
-WHERE id = "p006";
-
--- Edit User by id
-UPDATE users
-SET email = "totodog@gmail.com",
-    password = "auau"
-WHERE id = "4";
-
--- Edit Product by id
-UPDATE products
-SET name = "Mouse",
-    price = 25
-WHERE id = "p006";
-
---------------
--- Exercicio 3
---------------
-
--- Get All Users
--- resultado ordenado pela coluna email em ordem crescente
-SELECT * FROM users
-ORDER BY email ASC;
-
--- Get All Products versao 1
--- retorna o resultado ordenado pela coluna price em ordem crescente
--- limite o resultado em 20 iniciando pelo primeiro item
-SELECT * FROM products
-ORDER BY price ASC
-LIMIT 20;
-
--- Get All Products versao 2
--- mocke um intervalo de preços, por exemplo entre 100.00 e 300.00
--- retorna os produtos com preços dentro do intervalo mockado em ordem crescente
-SELECT * FROM products
-WHERE price > 40 AND price < 70
-ORDER BY price ASC;
-
--- Relacoes SQL
--- Exercicio 1
+-- query h
 DROP TABLE purchases;
 
+-- query i
 CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     buyer TEXT NOT NULL,
@@ -128,35 +69,17 @@ CREATE TABLE purchases(
     FOREIGN KEY (buyer) REFERENCES users(id)
 );
 
--- Exercicio 2
-INSERT INTO purchases(id, buyerId, totalPrice, paid) VALUES 
-    ("c001", "2", 80, 1),
-    ("c002", "3", 20, 1),
-    ("c003", "4", 50, 0),
-    ("c004", "1", 30, 1);
+-- query j
+INSERT INTO purchases(id, buyer, total_price) VALUES 
+    ("pur001", "u001", 1500);
 
+-- query k
 SELECT * FROM purchases;
 
-UPDATE purchases
-SET delivered_at = datetime('now')
-WHERE id = "c002";
-
-SELECT * FROM purchases;
-
--- Exercicio 3
-SELECT 
-    users.id AS userId,
-    users.email,
-    purchases.total_price
-FROM users
-INNER JOIN purchases
-ON purchases.buyer_id = users.id;
-
--- Relacoes SQL II
--- Exercicio 1
+-- query l
 DROP TABLE purchases_products;
-DROP TABLE users;
 
+-- query m
 CREATE TABLE purchases_products(
     purchase_id TEXT NOT NULL,
     product_id TEXT NOT NULL,
@@ -165,37 +88,21 @@ CREATE TABLE purchases_products(
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
--- Exercicio 2
+-- query n
 INSERT INTO purchases_products(purchase_id, product_id, quantity) VALUES
-    ("c001", "p001", "2"),
-    ("c001", "p002", "1"),
-    ("c002", "p001", "1");
+    ("pur001", "prod006", 1),
+    ("pur001", "prod007", 1);
 
+-- query o
 SELECT * FROM purchases_products;
 
-SELECT 
-purchases.id AS purchaseId,
-products.name AS productName,
-purchases.buyer_id AS buyerId
-FROM purchases_products
-INNER JOIN purchases
-ON purchases_products.purchase_id = purchases.id
-INNER JOIN products
-ON purchases_products.product_id = products.id;
+-- Queries com uso de JOIN
+-- Queries similares foram necessárias no código em Typescript
 
+-- query p
 SELECT 
 purchases.id AS purchaseId,
-products.name AS productName,
-purchases.buyer_id AS buyerId
-FROM purchases_products
-INNER JOIN purchases
-ON purchases_products.purchase_id = purchases.id
-RIGHT JOIN products
-ON purchases_products.product_id = products.id;
-
-SELECT 
-purchases.id AS purchaseId,
-purchases.buyer AS purchaseBuyer,
+purchases.buyer AS buyerId,
 users.name AS buyerName,
 users.email AS buyerEmail,
 purchases.total_price AS totalPrice,
@@ -206,6 +113,7 @@ INNER JOIN users
 ON purchases.buyer = users.id
 WHERE purchases.id = "pur001";
 
+-- query q
 SELECT
 products.id AS id,
 products.name AS name,
