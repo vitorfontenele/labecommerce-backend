@@ -318,7 +318,7 @@ Caso seja enviada uma query params (q) deve ser retornado o resultado da busca d
 
 [![Github][github-shield]][github-url][![Linkedin][linkedin-shield]][linkedin-url]
 
-Link do Projeto: [https://github.com/vitorfontenele/projeto-react-apis](https://github.com/vitorfontenele/projeto-react-apis)
+Link do Projeto: [https://github.com/vitorfontenele/labecommerce-backend](https://github.com/vitorfontenele/labecommerce-backend)
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
 
@@ -335,4 +335,3 @@ Link do Projeto: [https://github.com/vitorfontenele/projeto-react-apis](https://
 [linkedin-url]: https://www.linkedin.com/in/vitor-fontenele/
 [github-shield]: https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white
 [github-url]: https://github.com/vitorfontenele
-
