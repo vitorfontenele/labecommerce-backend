@@ -13,7 +13,7 @@
     <li>
       <a href="#instalação">Instalação</a>
     </li>
-    <li><a href="#utilização">Utilização</a></li>
+    <li><a href="#exemplos-de-requisições">Exemplos de Requisições</a></li>
     <li><a href="#contato">Contato</a></li>
   </ol>
 </details>
@@ -26,13 +26,6 @@ Este projeto é um exemplo de um Back-End para uma loja virtual.
 O banco de dados utilizado é o SQLite e a API foi construída usando o framework Express do Node JS. Este repositório é um exemplo de como construir uma estrutura de Back-End para uma aplicação de comércio eletrônico e pode ser usado como base para projetos futuros.
 
 Este projeto é parte dos projetos realizados como atividade durante o bootcamp da Labenu.
-
-Os conteúdos principais trabalhados nesse projeto são:
-
-- Integração com Banco de Dados
-- Métodos HTTP
-- Construção e manipulação de APIs
-- CRUD
 
 <p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
 
@@ -67,9 +60,7 @@ Os conteúdos principais trabalhados nesse projeto são:
 <!-- EXEMPLOS DE REQUISIÇÕES -->
 ## Exemplos de Requisições
 
-Seguem exemplos de como utilizar a API criada neste projeto. 
-
-Inclui exemplos de requisições HTTP para as operações CRUD (Criar, Ler, Atualizar e Deletar) para as tabelas de usuários, produtos e compras.
+Seguem exemplos de como utilizar a API criada neste projeto.
 
 ### Get all users
 
@@ -97,6 +88,8 @@ Inclui exemplos de requisições HTTP para as operações CRUD (Criar, Ler, Atua
 ]
 ```
 
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
 ### Create user
 
 ```typescript
@@ -121,6 +114,8 @@ Inclui exemplos de requisições HTTP para as operações CRUD (Criar, Ler, Atua
     }
 }
 ```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
 
 ### Create product
 
@@ -148,6 +143,171 @@ Inclui exemplos de requisições HTTP para as operações CRUD (Criar, Ler, Atua
       imageUrl: "https://dummy.com/joystick.jpg",
       category: "Electronics"
     } 
+}
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Get all products funcionalidade 1
+Retorna todos os produtos cadastrados. 
+
+```typescript
+// Request
+// GET /products
+// Response
+// status 200 OK
+[
+    {
+        id: "prod001",
+        name: "Sunscreen",
+        price: 10,
+        description: "Designed to protect you from UV radiation.",
+        imageUrl: "https://dummy.com/sunscreen.jpg",
+        category: "Acessories"
+    },
+    {...},
+    {
+        id: "prod009",
+        name: "Shoes",
+        price: 50,
+        description: "Comfortable and stylish.",
+        imageUrl: "https://dummy.com/shoes.jpg",
+        category: "Clothes and Shoes" 
+    }
+]
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Get all products funcionalidade 2
+Caso seja enviada uma query params (q) deve ser retornado o resultado da busca de produtos por nome.
+
+```typescript
+// Request
+// query params = q
+// GET /products?q=phone
+// Response
+// status 200 OK
+[
+    {
+        id: "prod006",
+        name: "Smartphone",
+        price: 600,
+        description: "Stay connected and productive.",
+        imageUrl: "https://dummy.com/smartphone.jpg",
+        category: "Electronics"
+    }
+]
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Edit product by id
+
+```typescript
+// Request
+// path params = :id
+// PUT /products/prod002
+// body JSON
+{
+  "description": "Your best friend in summer days.",
+}
+// Response
+// status 200 OK
+{
+    message: "Produto atualizado com sucesso",
+    product: {
+        "id": "prod002",
+        "name": "Sunglasses",
+        "price": 15,
+        "description": "Your best friend in summer days.",
+        "imageUrl": "https://dummy.com/sunglasses.jpg",
+        "category": "Acessories"
+    }
+}
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Create purchase
+
+```typescript
+// Request
+// POST /purchases
+// body JSON
+{
+    "id": "pur002",
+    "buyer": "u001",
+    "totalPrice": 25,
+    "products": [
+        {
+            "id": "prod003",
+            "name": "Blender",
+            "price": 25,
+            "description": "Blend and mix your ingredients with ease.",
+            "imageUrl": "https://dummy.com/blender.jpg",
+            "category": "Electronics",
+            "quantity": 1
+        }
+    ]
+}
+// Response
+// status 201 CREATED
+{
+    message: "Pedido realizado com sucesso"
+}
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Delete purchase by id
+
+```typescript
+// Request
+// path params = :id
+// DELETE /purchases/pur002
+// Response
+// status 200 OK
+{
+    message: "Pedido cancelado com sucesso"
+}
+```
+
+<p align="right">(<a href="#readme-top">voltar para o topo</a>)</p>
+
+### Get purchase by id
+```typescript
+// Request
+// path params = :id
+// GET /purchases/pur001
+// Response
+// status 200 OK
+{
+    purchaseId: "pur001",
+    buyerId: "u001",
+    buyerName: "John Smith",
+    buyerEmail: "johnsmith@gmail.com",
+    totalPrice: 1500,
+    createdAt: "2023-01-27 00:00:03",
+    paid: 0,
+    products: [
+        {
+            id: "prod006",
+            name: "Smartphone",
+            price: 600,
+            description: "Stay connected and productive.",
+            imageUrl: "https://dummy.com/smartphone.jpg",
+            quantity: 1
+        },
+        {
+            id: "prod007",
+            name: "Laptop",
+            price: 900,
+            description: "Powerful and portable.",
+            imageUrl: "https://dummy.com/laptop.jpg",
+            quantity: 1
+        }
+    ]
 }
 ```
 
